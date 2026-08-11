@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Task } from './types/task'
-import type { TaskFormPayload } from './components/TaskForm'
 import { loadTasks, saveTasks } from './utils/storage'
+import type { TaskFormPayload } from './components/TaskForm'
 
 import Header from './components/Header'
 import GreetingSummary from './components/GreetingSummary'
@@ -12,28 +12,18 @@ import TaskList from './components/TaskList'
 import EmptyState from './components/EmptyState'
 
 export default function App() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const isInitialMount = useRef(true)
+  const [tasks, setTasks] = useState<Task[]>(() => loadTasks())
 
   useEffect(() => {
-    setTasks(loadTasks())
-  }, [])
-
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false
-      return
-    }
-
     saveTasks(tasks)
   }, [tasks])
 
   const handleCreateTask = (payload: TaskFormPayload) => {
     const newTask: Task = {
       ...payload,
+      project: '',
+      time: '',
       id: crypto.randomUUID(),
-      project: 'default' as Task['project'],
-      time: 0 as Task['time'],
       completed: false,
       createdAt: new Date().toISOString(),
     }
@@ -52,8 +42,10 @@ export default function App() {
             <ProgressCard />
             <TaskForm onSubmit={handleCreateTask} />
             <FilterBar />
-            <TaskList />
+            {/* Render TaskList with tasks so that it displays when tasks exist */}
+            <TaskList tasks={tasks} />
           </div>
+
           {tasks.length === 0 && (
             <aside className="space-y-6">
               <EmptyState />
