@@ -24,6 +24,36 @@ const priorityColor: Record<Priority, string> = {
   high: 'bg-emerald-400',
 }
 
+const DATE_DISPLAY_FORMATTER = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+})
+
+const parseIsoDateAsLocal = (isoDate?: string): Date | undefined => {
+  if (!isoDate) {
+    return undefined
+  }
+
+  const [year, month, day] = isoDate.split('-').map(Number)
+
+  if ([year, month, day].some(value => Number.isNaN(value))) {
+    return undefined
+  }
+
+  return new Date(year, month - 1, day)
+}
+
+const formatTaskDate = (date?: string) => {
+  const parsedDate = parseIsoDateAsLocal(date)
+
+  if (!parsedDate) {
+    return 'No date'
+  }
+
+  return DATE_DISPLAY_FORMATTER.format(parsedDate)
+}
+
 const TITLE_MAX_LENGTH = 100
 const DESCRIPTION_MAX_LENGTH = 300
 
@@ -313,7 +343,7 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span>{task.date || 'No date'}</span>
+            <span>{formatTaskDate(task.date)}</span>
           </div>
           <div className={`flex items-center gap-2 rounded-full px-3 py-1 text-[0.6rem] ${priorityColor[task.priority]}`}>
             <Circle className="h-2 w-2" />
@@ -329,7 +359,7 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
           </div>
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            <span>{dateInput || 'No date'}</span>
+            <span>{formatTaskDate(dateInput)}</span>
           </div>
           <div className={`flex items-center gap-2 rounded-full px-3 py-1 text-[0.6rem] ${priorityColor[priorityInput]}`}>
             <Circle className="h-2 w-2" />
