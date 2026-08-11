@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import { Activity, AlertTriangle, CheckCircle2, ClipboardList } from 'lucide-react'
+import type { TaskMetrics } from '../types/task'
 
 type StatCardProps = {
   icon: LucideIcon
@@ -22,20 +23,18 @@ function StatCard({ icon: Icon, label, value, detail }: StatCardProps) {
 }
 
 type GreetingSummaryProps = {
-  totalTasks: number
-  completedTasks: number
-  activeTasks: number
-  highPriorityIncompleteTasks: number
-  progressPercent: number
+  metrics: TaskMetrics
 }
 
-export default function GreetingSummary({
-  totalTasks,
-  completedTasks,
-  activeTasks,
-  highPriorityIncompleteTasks,
-  progressPercent,
-}: GreetingSummaryProps) {
+export default function GreetingSummary({ metrics }: GreetingSummaryProps) {
+  const {
+    total: totalTasks,
+    completed: completedTasks,
+    active: activeTasks,
+    highPriorityIncomplete: highPriorityIncompleteTasks,
+    progressPercent,
+  } = metrics
+
   const stats: StatCardProps[] = [
     {
       label: 'Total tasks',
