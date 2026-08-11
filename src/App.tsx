@@ -9,7 +9,6 @@ import ProgressCard from './components/ProgressCard'
 import TaskForm from './components/TaskForm'
 import FilterBar from './components/FilterBar'
 import TaskList from './components/TaskList'
-import EmptyState from './components/EmptyState'
 
 type TaskUpdatePayload = {
   title: string
@@ -146,9 +145,6 @@ export default function App() {
     })
   }, [tasks, filter, normalizedQuery])
 
-  const shouldShowTasks = visibleTasks.length > 0
-  const shouldShowEmptySearchState = totalTasks > 0 && visibleTasks.length === 0
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 lg:px-12">
@@ -180,25 +176,13 @@ export default function App() {
           />
 
           <section className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40 p-4 transition-all duration-200">
-            {shouldShowTasks ? (
-              <TaskList
-                tasks={visibleTasks}
-                onToggleComplete={handleToggleComplete}
-                onDelete={handleDeleteTask}
-                onUpdate={handleUpdateTask}
-              />
-            ) : shouldShowEmptySearchState ? (
-              <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/70 p-6 text-center transition-all duration-200">
-                <p className="text-lg font-semibold text-slate-100">No tasks match your current search or filter settings.</p>
-                <p className="text-sm text-slate-400">
-                  Try clearing the search or selecting a different filter to see your tasks again.
-                </p>
-              </div>
-            ) : (
-              <div className="transition-all duration-200">
-                <EmptyState />
-              </div>
-            )}
+            <TaskList
+              tasks={visibleTasks}
+              hasTasks={totalTasks > 0}
+              onToggleComplete={handleToggleComplete}
+              onDelete={handleDeleteTask}
+              onUpdate={handleUpdateTask}
+            />
           </section>
         </div>
       </div>
