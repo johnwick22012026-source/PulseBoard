@@ -17,6 +17,8 @@ type TaskUpdatePayload = {
   title: string
   description?: string
   priority: Priority
+  date?: string
+  duration?: string
 }
 
 type FilterOption = 'All' | 'Active' | 'Completed'
@@ -202,6 +204,8 @@ export default function App() {
       title: trimmedTitle,
       description: sanitizedDescription,
       priority: payload.priority,
+      date: payload.date,
+      duration: payload.duration,
       project: '',
       time: '',
       id: crypto.randomUUID(),
@@ -240,11 +244,16 @@ export default function App() {
         const updatedDescription =
           payload.description === undefined ? task.description : sanitizeDescription(payload.description)
 
+        const updatedDate = payload.date === undefined ? task.date : payload.date
+        const updatedDuration = payload.duration === undefined ? task.duration : payload.duration
+
         return {
           ...task,
           title: trimmedTitle,
           priority: payload.priority,
           description: updatedDescription,
+          date: updatedDate,
+          duration: updatedDuration,
         }
       }),
     )
