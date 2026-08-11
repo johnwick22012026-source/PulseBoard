@@ -78,6 +78,14 @@ const cloneTasks = (tasks: Task[]): Task[] => tasks.map(task => ({ ...task }))
 
 const loadDefaultTasks = (): Task[] => cloneTasks(SAMPLE_TASKS)
 
+const clearCorruptStorage = (): void => {
+  try {
+    localStorage.removeItem(TASKS_STORAGE_KEY)
+  } catch (error) {
+    console.warn('Unable to clear corrupt task data from localStorage', error)
+  }
+}
+
 export const saveTasks = (tasks: Task[]): void => {
   if (typeof window === 'undefined') return
   try {
@@ -94,20 +102,22 @@ export const loadTasks = (): Task[] => {
     const rawValue = localStorage.getItem(TASKS_STORAGE_KEY)
     if (!rawValue) return loadDefaultTasks()
 
+    let parsed: unknown
     try {
-      const parsed = JSON.parse(rawValue)
-      if (isTaskArray(parsed)) {
-        return cloneTasks(parsed)
-      }
+      parsed = JSON.parse(rawValue)
     } catch (error) {
       console.warn('Unable to parse stored tasks, falling back to sample data', error)
+      clearCorruptStorage()
+      return loadDefaultTasks()
     }
 
-    try {
-      localStorage.removeItem(TASKS_STORAGE_KEY)
-    } catch (error) {
-      console.warn('Unable to clear corrupt task data from localStorage', error)
+    if (!isTaskArray(parsed)) {
+      console.warn('Stored task data has invalid shape, resetting to sample data')
+      clearCorruptStorage()
+      return loadDefaultTasks()
     }
+
+    return cloneTasks(parsed)
   } catch (error) {
     console.warn('Unable to access localStorage, falling back to sample data', error)
   }
