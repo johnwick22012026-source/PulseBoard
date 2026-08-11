@@ -65,7 +65,7 @@ export default function TaskList({
       }
 
   return (
-    <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-slate-900/60">
+    <section className="rounded-3xl border border-slate-800/90 bg-gradient-to-br from-slate-900/90 via-slate-900/70 to-slate-900/80 p-6 shadow-[0_20px_60px_-25px_rgba(2,6,23,0.85)] transition duration-300 hover:shadow-[0_30px_70px_-30px_rgba(16,185,129,0.45)]">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-white">Tasks in focus</h3>
         <span className="text-xs uppercase tracking-[0.3em] text-slate-500">sorted by energy</span>
