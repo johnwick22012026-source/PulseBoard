@@ -158,18 +158,24 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
                   </label>
                   <input
                     id={`edit-title-${task.id}`}
-                    className="mt-2 w-full rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                    className={`mt-2 w-full rounded-2xl border px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50 transition duration-150 ${
+                      errors.title ? 'border-rose-500 focus-visible:ring-rose-500/70' : 'border-slate-800'
+                    }`}
                     value={titleInput}
                     maxLength={TITLE_MAX_LENGTH}
                     onChange={event => setTitleInput(event.target.value)}
+                    aria-invalid={Boolean(errors.title)}
+                    aria-describedby={`edit-title-error-${task.id}`}
                   />
-                  {errors.title ? (
-                    <p className="mt-1 text-rose-400">{errors.title}</p>
-                  ) : (
-                    <p className="mt-1 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">
-                      {titleInput.trim().length}/{TITLE_MAX_LENGTH}
-                    </p>
-                  )}
+                  <p
+                    id={`edit-title-error-${task.id}`}
+                    className={`mt-1 text-[0.65rem] uppercase tracking-[0.3em] ${
+                      errors.title ? 'text-rose-400' : 'text-slate-500'
+                    }`}
+                    role={errors.title ? 'alert' : undefined}
+                  >
+                    {errors.title ?? `${titleInput.trim().length}/${TITLE_MAX_LENGTH}`}
+                  </p>
                 </div>
                 <div>
                   <label
@@ -180,18 +186,24 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
                   </label>
                   <textarea
                     id={`edit-description-${task.id}`}
-                    className="mt-2 h-20 w-full resize-none rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                    className={`mt-2 h-20 w-full resize-none rounded-2xl border px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50 transition duration-150 ${
+                      errors.description ? 'border-rose-500 focus-visible:ring-rose-500/70' : 'border-slate-800'
+                    }`}
                     value={descriptionInput}
                     maxLength={DESCRIPTION_MAX_LENGTH}
                     onChange={event => setDescriptionInput(event.target.value)}
+                    aria-invalid={Boolean(errors.description)}
+                    aria-describedby={`edit-description-error-${task.id}`}
                   />
-                  {errors.description ? (
-                    <p className="mt-1 text-rose-400">{errors.description}</p>
-                  ) : (
-                    <p className="mt-1 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">
-                      {descriptionInput.trim().length}/{DESCRIPTION_MAX_LENGTH}
-                    </p>
-                  )}
+                  <p
+                    id={`edit-description-error-${task.id}`}
+                    className={`mt-1 text-[0.65rem] uppercase tracking-[0.3em] ${
+                      errors.description ? 'text-rose-400' : 'text-slate-500'
+                    }`}
+                    role={errors.description ? 'alert' : undefined}
+                  >
+                    {errors.description ?? `${descriptionInput.trim().length}/${DESCRIPTION_MAX_LENGTH}`}
+                  </p>
                 </div>
                 <div>
                   <label
@@ -202,7 +214,7 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
                   </label>
                   <select
                     id={`edit-priority-${task.id}`}
-                    className="mt-2 w-full rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-100 focus:border-emerald-400 focus:outline-none"
+                    className="mt-2 w-full rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-100 focus:border-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50"
                     value={priorityInput}
                     onChange={event => setPriorityInput(event.target.value as Priority)}
                   >
@@ -214,14 +226,14 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
                 <div className="flex gap-2">
                   <button
                     type="submit"
-                    className="flex-1 rounded-2xl bg-emerald-500/80 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-950 transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400"
+                    className="flex-1 rounded-2xl bg-emerald-500/80 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-950 transition duration-150 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/80 focus-visible:ring-offset-2 active:translate-y-[1px]"
                   >
                     Save changes
                   </button>
                   <button
                     type="button"
                     onClick={handleCancelEdits}
-                    className="flex-1 rounded-2xl border border-slate-800 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 transition hover:border-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-500"
+                    className="flex-1 rounded-2xl border border-slate-800 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 transition duration-150 hover:border-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-500/80 focus-visible:ring-offset-2 active:translate-y-[1px]"
                   >
                     Cancel
                   </button>
@@ -235,7 +247,7 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
             type="button"
             onClick={handleEditToggle}
             aria-label={`Edit task`}
-            className={`rounded-full border border-slate-800 bg-slate-900/60 p-2 text-slate-400 transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400 ${
+            className={`rounded-full border border-slate-800 bg-slate-900/60 p-2 text-slate-400 transition duration-150 hover:border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70 focus-visible:ring-offset-2 active:scale-95 ${
               isEditing ? 'border-emerald-400 text-white' : ''
             }`}
           >
@@ -245,7 +257,7 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
             type="button"
             onClick={() => onDelete(task.id)}
             aria-label="Delete task"
-            className="rounded-full border border-slate-800 bg-slate-900/60 p-2 text-slate-400 transition hover:border-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rose-500/60"
+            className="rounded-full border border-slate-800 bg-slate-900/60 p-2 text-slate-400 transition duration-150 hover:border-rose-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500/70 focus-visible:ring-offset-2 active:scale-95"
           >
             <Trash2 className="h-4 w-4" />
           </button>
