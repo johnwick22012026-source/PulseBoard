@@ -11,9 +11,9 @@ type StatCardProps = {
 
 function StatCard({ icon: Icon, label, value, detail }: StatCardProps) {
   return (
-    <article className="rounded-2xl border border-slate-800/60 bg-slate-900/60 p-5 shadow-xl shadow-slate-900/50 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-500/50 hover:shadow-emerald-500/30">
+    <article className="min-h-[130px] rounded-2xl border border-slate-800/60 bg-slate-900/60 p-5 shadow-xl shadow-slate-900/50 transition duration-200 hover:-translate-y-0.5 hover:border-emerald-500/50 hover:shadow-emerald-500/30">
       <div className="flex items-center justify-between">
-        <p className="text-xs uppercase tracking-[0.4em] text-slate-500">{label}</p>
+        <p className="text-[0.55rem] uppercase tracking-[0.4em] text-slate-500">{label}</p>
         <Icon className="h-6 w-6 text-slate-400" aria-hidden />
       </div>
       <p className="mt-4 text-3xl font-semibold text-white">{value}</p>
@@ -65,7 +65,7 @@ export default function GreetingSummary({ metrics }: GreetingSummaryProps) {
   return (
     <section className="space-y-6 rounded-3xl border border-slate-800/80 bg-gradient-to-br from-slate-900/80 to-slate-900/40 p-6 shadow-xl shadow-slate-900/60">
       <div className="space-y-1">
-        <p className="text-sm uppercase tracking-[0.4em] text-slate-500">PulseBoard</p>
+        <p className="text-sm uppercase tracking-[0.4em] text-emerald-300">PulseBoard</p>
         <h1 className="text-3xl font-semibold text-white">
           {activeTasks === 0
             ? 'Seize the day — kick off your first task'
@@ -76,7 +76,7 @@ export default function GreetingSummary({ metrics }: GreetingSummaryProps) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {stats.map(stat => (
           <StatCard key={stat.label} {...stat} />
         ))}
