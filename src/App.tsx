@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import type { Task } from './types/task'
+import { useEffect, useMemo, useState } from 'react'
+import type { Priority, Task } from './types/task'
 import { loadTasks, saveTasks } from './utils/storage'
 import type { TaskFormPayload } from './components/TaskForm'
 
@@ -11,8 +11,15 @@ import FilterBar from './components/FilterBar'
 import TaskList from './components/TaskList'
 import EmptyState from './components/EmptyState'
 
+type TaskUpdatePayload = {
+  title: string
+  description?: string
+  priority: Priority
+}
+
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => loadTasks())
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     saveTasks(tasks)
@@ -31,6 +38,46 @@ export default function App() {
     setTasks(prevTasks => [...prevTasks, newTask])
   }
 
+  const handleToggleComplete = (taskId: string) => {
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id === taskId ? { ...task, completed: !task.completed } : task,
+      ),
+    )
+  }
+
+  const handleDeleteTask = (taskId: string) => {
+    setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId))
+  }
+
+  const handleUpdateTask = (taskId: string, payload: TaskUpdatePayload) => {
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id === taskId
+          ? {
+              ...task,
+              title: payload.title,
+              priority: payload.priority,
+              description: payload.description?.trim() ?? undefined,
+            }
+          : task,
+      ),
+    )
+  }
+
+  const normalizedQuery = searchQuery.trim().toLowerCase()
+  const filteredTasks = useMemo(() => {
+    if (!normalizedQuery) {
+      return tasks
+    }
+
+    return tasks.filter(task => {
+      const titleMatches = task.title.toLowerCase().includes(normalizedQuery)
+      const descriptionMatches = task.description?.toLowerCase().includes(normalizedQuery)
+      return titleMatches || descriptionMatches
+    })
+  }, [normalizedQuery, tasks])
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 lg:px-12">
@@ -41,9 +88,13 @@ export default function App() {
             <GreetingSummary />
             <ProgressCard />
             <TaskForm onSubmit={handleCreateTask} />
-            <FilterBar />
-            {/* Render TaskList with tasks so that it displays when tasks exist */}
-            <TaskList tasks={tasks} />
+            <FilterBar searchQuery={searchQuery} onSearchQueryChange={setSearchQuery} />
+            <TaskList
+              tasks={filteredTasks}
+              onToggleComplete={handleToggleComplete}
+              onDelete={handleDeleteTask}
+              onUpdate={handleUpdateTask}
+            />
           </div>
 
           {tasks.length === 0 && (
