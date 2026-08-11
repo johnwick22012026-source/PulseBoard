@@ -1,5 +1,6 @@
 import type { Task, Priority } from '../types/task'
 
+import EmptyState from './EmptyState'
 import TaskItem from './TaskItem'
 
 type TaskUpdatePayload = {
@@ -10,6 +11,7 @@ type TaskUpdatePayload = {
 
 type TaskListProps = {
   tasks: Task[]
+  hasTasks: boolean
   onToggleComplete: (taskId: string) => void
   onDelete: (taskId: string) => void
   onUpdate: (taskId: string, payload: TaskUpdatePayload) => void
@@ -28,7 +30,13 @@ const getEnergyScore = (priority: Priority) => {
   }
 }
 
-export default function TaskList({ tasks, onToggleComplete, onDelete, onUpdate }: TaskListProps) {
+export default function TaskList({
+  tasks,
+  hasTasks,
+  onToggleComplete,
+  onDelete,
+  onUpdate,
+}: TaskListProps) {
   const sortedTasks = [...tasks].sort((a, b) => {
     const energyDiff = getEnergyScore(b.priority) - getEnergyScore(a.priority)
 
@@ -39,6 +47,18 @@ export default function TaskList({ tasks, onToggleComplete, onDelete, onUpdate }
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   })
 
+  const emptyStateContent = hasTasks
+    ? {
+        title: 'No matching tasks',
+        description: 'Try adjusting your filters or clearing the search to find tasks again.',
+        tagline: 'Filter results'
+      }
+    : {
+        title: 'No tasks yet',
+        description: 'Add a focus task to start tracking your productivity streak.',
+        tagline: 'New beginnings'
+      }
+
   return (
     <section className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-xl shadow-slate-900/60">
       <div className="flex items-center justify-between">
@@ -46,7 +66,13 @@ export default function TaskList({ tasks, onToggleComplete, onDelete, onUpdate }
         <span className="text-xs uppercase tracking-[0.3em] text-slate-500">sorted by energy</span>
       </div>
       {sortedTasks.length === 0 ? (
-        <p className="mt-6 text-sm text-slate-400">You haven&apos;t added any tasks yet. Start by creating a new one above.</p>
+        <div className="mt-6">
+          <EmptyState
+            title={emptyStateContent.title}
+            description={emptyStateContent.description}
+            tagline={emptyStateContent.tagline}
+          />
+        </div>
       ) : (
         <div className="mt-4 space-y-3">
           {sortedTasks.map(task => (
