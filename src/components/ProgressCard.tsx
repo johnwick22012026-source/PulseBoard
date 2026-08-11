@@ -25,7 +25,23 @@ export default function ProgressCard({
   progressPercent,
   message,
 }: ProgressCardProps) {
-  const clampedPercent = Math.min(Math.max(progressPercent, 0), 100)
+  const safeCompleted = Number.isFinite(completed) ? Math.max(completed, 0) : 0
+  const safeTotal = Number.isFinite(total) ? Math.max(total, 0) : 0
+
+  const computedPercent = safeTotal === 0 ? 0 : (safeCompleted / safeTotal) * 100
+  const effectivePercent = Number.isFinite(progressPercent)
+    ? progressPercent
+    : computedPercent
+  const clampedPercent = Math.min(Math.max(effectivePercent, 0), 100)
+
+  const activeMessage =
+    safeTotal === 0
+      ? 'Nothing to track yet — add a task to kick off your focus sprint.'
+      : safeCompleted === safeTotal
+      ? 'All done! Take a mindful break or plan your next wins.'
+      : message
+
+  const taskLabel = safeTotal === 1 ? 'task' : 'tasks'
 
   return (
     <section className="rounded-3xl border border-slate-800/70 bg-gradient-to-br from-slate-900/80 to-slate-900/40 p-6 shadow-xl shadow-slate-900/50 transition-colors duration-300">
@@ -44,7 +60,7 @@ export default function ProgressCard({
             <p className="text-sm text-slate-400">complete</p>
           </div>
           <p className="text-sm font-medium text-slate-300">
-            {completed} / {total} {total === 1 ? 'task' : 'tasks'}
+            {safeCompleted} / {safeTotal} {taskLabel}
           </p>
         </div>
 
@@ -60,7 +76,7 @@ export default function ProgressCard({
         </div>
       </div>
 
-      <p className="mt-6 text-sm leading-relaxed text-slate-200/90 transition-colors duration-300">{message}</p>
+      <p className="mt-6 text-sm leading-relaxed text-slate-200/90 transition-colors duration-300">{activeMessage}</p>
     </section>
   )
 }
