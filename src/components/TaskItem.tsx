@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from 'react'
-import { Check, Circle, Clock3, Pencil, Trash2 } from 'lucide-react'
+import { Check, Circle, Clock3, Pencil, Trash2, Calendar } from 'lucide-react'
 
 import type { Priority, Task } from '../types/task'
 
@@ -7,6 +7,8 @@ type TaskUpdatePayload = {
   title: string
   description?: string
   priority: Priority
+  date?: string
+  duration?: string
 }
 
 type TaskItemProps = {
@@ -30,17 +32,23 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
   const [titleInput, setTitleInput] = useState(task.title)
   const [descriptionInput, setDescriptionInput] = useState(task.description ?? '')
   const [priorityInput, setPriorityInput] = useState<Priority>(task.priority)
+  const [dateInput, setDateInput] = useState(task.date ?? '')
+  const [durationInput, setDurationInput] = useState(task.duration ?? '')
   const [errors, setErrors] = useState<{ title?: string; description?: string }>({})
 
   useEffect(() => {
     setTitleInput(task.title)
     setDescriptionInput(task.description ?? '')
     setPriorityInput(task.priority)
-  }, [task.title, task.description, task.priority])
+    setDateInput(task.date ?? '')
+    setDurationInput(task.duration ?? '')
+  }, [task.title, task.description, task.priority, task.date, task.duration])
 
   const validateInputs = () => {
     const trimmedTitle = titleInput.trim()
     const trimmedDescription = descriptionInput.trim()
+    const trimmedDate = dateInput
+    const trimmedDuration = durationInput.trim()
     const newErrors: { title?: string; description?: string } = {}
 
     if (!trimmedTitle) {
@@ -55,11 +63,11 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
 
     setErrors(newErrors)
 
-    return { valid: Object.keys(newErrors).length === 0, trimmedTitle, trimmedDescription }
+    return { valid: Object.keys(newErrors).length === 0, trimmedTitle, trimmedDescription, trimmedDate, trimmedDuration }
   }
 
   const handleSaveEdits = () => {
-    const { valid, trimmedTitle, trimmedDescription } = validateInputs()
+    const { valid, trimmedTitle, trimmedDescription, trimmedDate, trimmedDuration } = validateInputs()
 
     if (!valid) {
       return
@@ -69,6 +77,8 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
       title: trimmedTitle,
       priority: priorityInput,
       description: trimmedDescription || undefined,
+      date: trimmedDate || undefined,
+      duration: trimmedDuration || undefined,
     })
 
     setIsEditing(false)
@@ -78,6 +88,8 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
     setTitleInput(task.title)
     setDescriptionInput(task.description ?? '')
     setPriorityInput(task.priority)
+    setDateInput(task.date ?? '')
+    setDurationInput(task.duration ?? '')
     setErrors({})
     setIsEditing(false)
   }
@@ -207,6 +219,36 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
                 </div>
                 <div>
                   <label
+                    htmlFor={`edit-date-${task.id}`}
+                    className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500"
+                  >
+                    Date
+                  </label>
+                  <input
+                    id={`edit-date-${task.id}`}
+                    type="date"
+                    className="mt-2 w-full rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-100 focus:border-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50"
+                    value={dateInput}
+                    onChange={event => setDateInput(event.target.value)}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor={`edit-duration-${task.id}`}
+                    className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500"
+                  >
+                    Duration
+                  </label>
+                  <input
+                    id={`edit-duration-${task.id}`}
+                    type="text"
+                    className="mt-2 w-full rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-100 focus:border-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/50"
+                    value={durationInput}
+                    onChange={event => setDurationInput(event.target.value)}
+                  />
+                </div>
+                <div>
+                  <label
                     htmlFor={`edit-priority-${task.id}`}
                     className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500"
                   >
@@ -267,7 +309,11 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
         <div className="flex flex-col gap-2 text-xs uppercase tracking-[0.3em] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <Clock3 className="h-4 w-4" />
-            <span>{task.time || 'No estimate'}</span>
+            <span>{task.duration || 'No estimate'}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            <span>{task.date || 'No date'}</span>
           </div>
           <div className={`flex items-center gap-2 rounded-full px-3 py-1 text-[0.6rem] ${priorityColor[task.priority]}`}>
             <Circle className="h-2 w-2" />
@@ -279,7 +325,11 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
         <div className="flex flex-col gap-2 text-xs uppercase tracking-[0.3em] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <Clock3 className="h-4 w-4" />
-            <span>{task.time || 'No estimate'}</span>
+            <span>{durationInput || 'No estimate'}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            <span>{dateInput || 'No date'}</span>
           </div>
           <div className={`flex items-center gap-2 rounded-full px-3 py-1 text-[0.6rem] ${priorityColor[priorityInput]}`}>
             <Circle className="h-2 w-2" />
