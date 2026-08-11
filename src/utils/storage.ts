@@ -7,6 +7,8 @@ const SAMPLE_TASKS: Task[] = [
     id: 'task-landing-page',
     title: 'Finish landing page',
     description: 'Polish hero copy, responsive layout, and call-to-action buttons for launch.',
+    project: 'Marketing',
+    time: '2h',
     completed: false,
     priority: 'high',
     createdAt: '2024-08-01T09:00:00.000Z',
@@ -15,6 +17,8 @@ const SAMPLE_TASKS: Task[] = [
     id: 'task-project-proposal',
     title: 'Review project proposal',
     description: 'Double-check timelines, dependencies, and budget before the stakeholder review.',
+    project: 'Operations',
+    time: '45m',
     completed: true,
     priority: 'medium',
     createdAt: '2024-07-30T14:30:00.000Z',
@@ -23,6 +27,8 @@ const SAMPLE_TASKS: Task[] = [
     id: 'task-read-pages',
     title: 'Read 20 pages',
     description: 'Cover the next chapter of the design systems reference book for inspiration.',
+    project: 'Learning',
+    time: '1h',
     completed: false,
     priority: 'low',
     createdAt: '2024-07-25T18:15:00.000Z',
@@ -31,6 +37,8 @@ const SAMPLE_TASKS: Task[] = [
     id: 'task-workout',
     title: 'Workout',
     description: 'Finish the HIIT routine and post-workout stretch for lasting energy.',
+    project: 'Wellness',
+    time: '1h 15m',
     completed: true,
     priority: 'medium',
     createdAt: '2024-07-29T07:10:00.000Z',
@@ -39,6 +47,8 @@ const SAMPLE_TASKS: Task[] = [
     id: 'task-plan-tomorrow',
     title: 'Plan tomorrow',
     description: 'Outline priorities and prep quick notes to hit the ground running in the morning.',
+    project: 'Productivity',
+    time: '30m',
     completed: false,
     priority: 'high',
     createdAt: '2024-08-01T19:45:00.000Z',
@@ -52,6 +62,8 @@ const isTask = (value: unknown): value is Task => {
     typeof task.id === 'string' &&
     typeof task.title === 'string' &&
     (typeof task.description === 'undefined' || typeof task.description === 'string') &&
+    typeof task.project === 'string' &&
+    typeof task.time === 'string' &&
     typeof task.completed === 'boolean' &&
     (task.priority === 'low' || task.priority === 'medium' || task.priority === 'high') &&
     typeof task.createdAt === 'string'
