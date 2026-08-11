@@ -1,3 +1,7 @@
+import { useEffect, useRef, useState } from 'react'
+import type { Task } from './types/task'
+import { loadTasks, saveTasks } from './utils/storage'
+
 import Header from './components/Header'
 import GreetingSummary from './components/GreetingSummary'
 import ProgressCard from './components/ProgressCard'
@@ -7,6 +11,22 @@ import TaskList from './components/TaskList'
 import EmptyState from './components/EmptyState'
 
 export default function App() {
+  const [tasks, setTasks] = useState<Task[]>([])
+  const isInitialMount = useRef(true)
+
+  useEffect(() => {
+    setTasks(loadTasks())
+  }, [])
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+
+    saveTasks(tasks)
+  }, [tasks])
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 lg:px-12">
@@ -20,9 +40,11 @@ export default function App() {
             <FilterBar />
             <TaskList />
           </div>
-          <aside className="space-y-6">
-            <EmptyState />
-          </aside>
+          {tasks.length === 0 && (
+            <aside className="space-y-6">
+              <EmptyState />
+            </aside>
+          )}
         </div>
       </div>
     </div>
