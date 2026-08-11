@@ -5,6 +5,8 @@ export type TaskFormPayload = {
   title: string
   description?: string
   priority: Priority
+  date?: string
+  duration?: string
 }
 
 type TaskFormProps = {
@@ -26,6 +28,8 @@ export default function TaskForm({ onSubmit }: TaskFormProps) {
   const [priority, setPriority] = useState<Priority>('medium')
   const [titleError, setTitleError] = useState('')
   const [descriptionError, setDescriptionError] = useState('')
+  const [date, setDate] = useState('')
+  const [duration, setDuration] = useState('')
 
   const priorityOptions = useMemo(() => ['low', 'medium', 'high'] as Priority[], [])
 
@@ -71,10 +75,20 @@ export default function TaskForm({ onSubmit }: TaskFormProps) {
       payload.description = trimmedDescription
     }
 
+    if (date) {
+      payload.date = date
+    }
+
+    if (duration.trim()) {
+      payload.duration = duration.trim()
+    }
+
     onSubmit(payload)
     setTitle('')
     setDescription('')
     setPriority('medium')
+    setDate('')
+    setDuration('')
   }
 
   const handleDescriptionChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
@@ -150,6 +164,32 @@ export default function TaskForm({ onSubmit }: TaskFormProps) {
               {description.trim().length}/{DESCRIPTION_MAX_LENGTH}
             </p>
           )}
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-2">
+            <label htmlFor="task-date" className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+              Date
+            </label>
+            <input
+              id="task-date"
+              type="date"
+              className="w-full rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-3 text-sm text-slate-100 transition duration-150 focus:border-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+              value={date}
+              onChange={(event) => setDate(event.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="task-duration" className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">
+              Duration
+            </label>
+            <input
+              id="task-duration"
+              placeholder="e.g. 90 min"
+              className="w-full rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-3 text-sm text-slate-100 placeholder:text-slate-500 transition duration-150 focus:border-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
+              value={duration}
+              onChange={(event) => setDuration(event.target.value)}
+            />
+          </div>
         </div>
         <fieldset className="space-y-2">
           <legend className="text-[0.65rem] font-semibold uppercase tracking-[0.35em] text-slate-500">Priority</legend>
