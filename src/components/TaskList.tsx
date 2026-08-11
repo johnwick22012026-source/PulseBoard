@@ -1,6 +1,6 @@
 import type { Task, Priority } from '../types/task'
 
-import { Sparkles } from 'lucide-react'
+import { Search, Sparkles } from 'lucide-react'
 
 import EmptyState from './EmptyState'
 import TaskItem from './TaskItem'
@@ -49,16 +49,19 @@ export default function TaskList({
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   })
 
-  const emptyStateContent = hasTasks
+  const hasMatchingResults = sortedTasks.length > 0
+  const showNoMatchingState = hasTasks && !hasMatchingResults
+
+  const emptyStateContent = showNoMatchingState
     ? {
         title: 'No matching tasks',
-        description: 'Try adjusting your filters or clearing the search to find tasks again.',
-        tagline: 'Filter results'
+        description: 'Try a different search or filter.',
+        tagline: 'Filter results',
       }
     : {
         title: 'No tasks yet',
         description: 'Create your first task and start making progress.',
-        tagline: 'New beginnings'
+        tagline: 'New beginnings',
       }
 
   return (
@@ -67,20 +70,7 @@ export default function TaskList({
         <h3 className="text-lg font-semibold text-white">Tasks in focus</h3>
         <span className="text-xs uppercase tracking-[0.3em] text-slate-500">sorted by energy</span>
       </div>
-      {sortedTasks.length === 0 ? (
-        <div className="mt-6">
-          <EmptyState
-            title={emptyStateContent.title}
-            description={emptyStateContent.description}
-            tagline={emptyStateContent.tagline}
-            icon={
-              hasTasks ? undefined : (
-                <Sparkles className="h-6 w-6 text-emerald-300" />
-              )
-            }
-          />
-        </div>
-      ) : (
+      {hasMatchingResults ? (
         <div className="mt-4 space-y-3">
           {sortedTasks.map(task => (
             <TaskItem
@@ -91,6 +81,21 @@ export default function TaskList({
               onUpdate={onUpdate}
             />
           ))}
+        </div>
+      ) : (
+        <div className="mt-6">
+          <EmptyState
+            title={emptyStateContent.title}
+            description={emptyStateContent.description}
+            tagline={emptyStateContent.tagline}
+            icon={
+              showNoMatchingState ? (
+                <Search className="h-6 w-6 text-slate-400" />
+              ) : (
+                <Sparkles className="h-6 w-6 text-emerald-300" />
+              )
+            }
+          />
         </div>
       )}
     </section>
