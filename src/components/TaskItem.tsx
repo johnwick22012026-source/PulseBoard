@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { FormEvent, useEffect, useState } from 'react'
 import { Check, Circle, Clock3, Pencil, Trash2 } from 'lucide-react'
 
 import type { Priority, Task } from '../types/task'
@@ -64,92 +64,16 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
     setIsEditing(false)
   }
 
-  if (isEditing) {
-    return (
-      <article className="rounded-2xl border border-slate-800 bg-slate-950/60 p-5 text-sm text-slate-400 shadow-xl shadow-slate-950/40">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-500">Task</p>
-            <h4 className="text-base font-semibold text-white">Edit task</h4>
-          </div>
-          <button
-            type="button"
-            onClick={handleCancelEdits}
-            className="text-xs uppercase tracking-[0.3em] text-slate-500 hover:text-white"
-          >
-            cancel
-          </button>
-        </div>
-        <div className="mt-4 space-y-4">
-          <div>
-            <label htmlFor={`edit-title-${task.id}`} className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">
-              Title
-            </label>
-            <input
-              id={`edit-title-${task.id}`}
-              className="mt-2 w-full rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
-              value={titleInput}
-              maxLength={100}
-              onChange={event => setTitleInput(event.target.value)}
-            />
-            {error && <p className="mt-1 text-rose-400">{error}</p>}
-          </div>
-          <div>
-            <label htmlFor={`edit-description-${task.id}`} className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">
-              Description
-            </label>
-            <textarea
-              id={`edit-description-${task.id}`}
-              className="mt-2 h-20 w-full resize-none rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
-              value={descriptionInput}
-              maxLength={300}
-              onChange={event => setDescriptionInput(event.target.value)}
-            />
-            <p className="mt-1 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">
-              {descriptionInput.length}/300
-            </p>
-          </div>
-          <div>
-            <label htmlFor={`edit-priority-${task.id}`} className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">
-              Priority
-            </label>
-            <select
-              id={`edit-priority-${task.id}`}
-              className="mt-2 w-full rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-100 focus:border-emerald-400 focus:outline-none"
-              value={priorityInput}
-              onChange={event => setPriorityInput(event.target.value as Priority)}
-            >
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-            </select>
-          </div>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={handleSaveEdits}
-              className="flex-1 rounded-2xl bg-emerald-500/80 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-950 transition hover:opacity-90"
-            >
-              Save changes
-            </button>
-            <button
-              type="button"
-              onClick={handleCancelEdits}
-              className="flex-1 rounded-2xl border border-slate-800 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 transition hover:border-white"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </article>
-    )
+  const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    handleSaveEdits()
   }
 
   return (
     <article
       className={`flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-950/40 px-4 py-4 text-sm shadow-lg shadow-slate-950/40 transition ${
         task.completed ? 'opacity-70' : 'opacity-100'
-      }`}
+      } ${isEditing ? 'ring-2 ring-emerald-500/40' : ''}`}
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-1 items-start gap-3">
@@ -174,26 +98,108 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
             <span className="sr-only">Toggle completion for {task.title}</span>
           </label>
           <div className="flex-1">
-            <p
-              className={`text-base font-semibold transition ${
-                task.completed ? 'text-slate-500 line-through' : 'text-white'
-              }`}
-            >
-              {task.title}
-            </p>
-            {task.description ? (
-              <p className={`text-xs transition ${task.completed ? 'text-slate-500 line-through' : 'text-slate-400'}`}>{task.description}</p>
+            {!isEditing ? (
+              <>
+                <p
+                  className={`text-base font-semibold transition ${
+                    task.completed ? 'text-slate-500 line-through' : 'text-white'
+                  }`}
+                >
+                  {task.title}
+                </p>
+                {task.description ? (
+                  <p
+                    className={`text-xs transition ${
+                      task.completed ? 'text-slate-500 line-through' : 'text-slate-400'
+                    }`}
+                  >
+                    {task.description}
+                  </p>
+                ) : (
+                  <p className="text-xs uppercase tracking-[0.3em] text-slate-600">No description</p>
+                )}
+              </>
             ) : (
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-600">No description</p>
+              <form onSubmit={handleFormSubmit} className="mt-1 space-y-4">
+                <div>
+                  <label
+                    htmlFor={`edit-title-${task.id}`}
+                    className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500"
+                  >
+                    Title
+                  </label>
+                  <input
+                    id={`edit-title-${task.id}`}
+                    className="mt-2 w-full rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                    value={titleInput}
+                    maxLength={100}
+                    onChange={event => setTitleInput(event.target.value)}
+                  />
+                  {error && <p className="mt-1 text-rose-400">{error}</p>}
+                </div>
+                <div>
+                  <label
+                    htmlFor={`edit-description-${task.id}`}
+                    className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500"
+                  >
+                    Description
+                  </label>
+                  <textarea
+                    id={`edit-description-${task.id}`}
+                    className="mt-2 h-20 w-full resize-none rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
+                    value={descriptionInput}
+                    maxLength={300}
+                    onChange={event => setDescriptionInput(event.target.value)}
+                  />
+                  <p className="mt-1 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">
+                    {descriptionInput.length}/300
+                  </p>
+                </div>
+                <div>
+                  <label
+                    htmlFor={`edit-priority-${task.id}`}
+                    className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500"
+                  >
+                    Priority
+                  </label>
+                  <select
+                    id={`edit-priority-${task.id}`}
+                    className="mt-2 w-full rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-100 focus:border-emerald-400 focus:outline-none"
+                    value={priorityInput}
+                    onChange={event => setPriorityInput(event.target.value as Priority)}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    className="flex-1 rounded-2xl bg-emerald-500/80 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-950 transition hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400"
+                  >
+                    Save changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelEdits}
+                    className="flex-1 rounded-2xl border border-slate-800 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 transition hover:border-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-500"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
             )}
           </div>
         </div>
-        <div className="flex items-center sm:gap-2">
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setIsEditing(true)}
+            onClick={() => setIsEditing(prev => !prev)}
             aria-label={`Edit task`}
-            className="rounded-full border border-slate-800 bg-slate-900/60 p-2 text-slate-400 transition hover:border-slate-500"
+            className={`rounded-full border border-slate-800 bg-slate-900/60 p-2 text-slate-400 transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400 ${
+              isEditing ? 'border-emerald-400 text-white' : ''
+            }`}
           >
             <Pencil className="h-4 w-4" />
           </button>
@@ -201,22 +207,36 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
             type="button"
             onClick={() => onDelete(task.id)}
             aria-label="Delete task"
-            className="rounded-full border border-slate-800 bg-slate-900/60 p-2 text-slate-400 transition hover:border-rose-500"
+            className="rounded-full border border-slate-800 bg-slate-900/60 p-2 text-slate-400 transition hover:border-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-rose-500/60"
           >
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
       </div>
-      <div className="flex flex-col gap-2 text-xs uppercase tracking-[0.3em] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-2">
-          <Clock3 className="h-4 w-4" />
-          <span>{task.time || 'No estimate'}</span>
+      {!isEditing && (
+        <div className="flex flex-col gap-2 text-xs uppercase tracking-[0.3em] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <Clock3 className="h-4 w-4" />
+            <span>{task.time || 'No estimate'}</span>
+          </div>
+          <div className={`flex items-center gap-2 rounded-full px-3 py-1 text-[0.6rem] ${priorityColor[task.priority]}`}>
+            <Circle className="h-2 w-2" />
+            {task.priority}
+          </div>
         </div>
-        <div className={`flex items-center gap-2 rounded-full px-3 py-1 text-[0.6rem] ${priorityColor[task.priority]}`}>
-          <Circle className="h-2 w-2" />
-          {task.priority}
+      )}
+      {isEditing && (
+        <div className="flex flex-col gap-2 text-xs uppercase tracking-[0.3em] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <Clock3 className="h-4 w-4" />
+            <span>{task.time || 'No estimate'}</span>
+          </div>
+          <div className={`flex items-center gap-2 rounded-full px-3 py-1 text-[0.6rem] ${priorityColor[priorityInput]}`}>
+            <Circle className="h-2 w-2" />
+            {priorityInput}
+          </div>
         </div>
-      </div>
+      )}
       {task.project && <p className="text-[0.6rem] uppercase tracking-[0.4em] text-slate-600">{task.project}</p>}
     </article>
   )
