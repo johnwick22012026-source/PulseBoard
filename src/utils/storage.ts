@@ -82,7 +82,11 @@ const isTask = (value: unknown): value is Task => {
 const isTaskArray = (value: unknown): value is Task[] =>
   Array.isArray(value) && value.every(isTask)
 
-const cloneTasks = (tasks: Task[]): Task[] => tasks.map(task => ({ ...task }))
+const cloneTasks = (tasks: Task[]): Task[] =>
+  tasks.map(task => ({
+    ...task,
+    duration: task.duration ?? task.time,
+  }))
 
 const loadDefaultTasks = (): Task[] => cloneTasks(SAMPLE_TASKS)
 
