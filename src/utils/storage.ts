@@ -69,17 +69,18 @@ const isTask = (value: unknown): value is Task => {
     typeof task.id === 'string' &&
     typeof task.title === 'string' &&
     (typeof task.description === 'undefined' || typeof task.description === 'string') &&
-    typeof task.project === 'string' &&
-    typeof task.time === 'string' &&
+    (typeof task.project === 'undefined' || typeof task.project === 'string') &&
+    (typeof task.time === 'undefined' || typeof task.time === 'string') &&
+    (typeof task.date === 'undefined' || typeof task.date === 'string') &&
+    (typeof task.duration === 'undefined' || typeof task.duration === 'string') &&
     typeof task.completed === 'boolean' &&
     (task.priority === 'low' || task.priority === 'medium' || task.priority === 'high') &&
     typeof task.createdAt === 'string'
   )
 }
 
-const isTaskArray = (value: unknown): value is Task[] => {
-  return Array.isArray(value) && value.every(isTask)
-}
+const isTaskArray = (value: unknown): value is Task[] =>
+  Array.isArray(value) && value.every(isTask)
 
 const cloneTasks = (tasks: Task[]): Task[] => tasks.map(task => ({ ...task }))
 
