@@ -1,7 +1,7 @@
 import { FormEvent, useState } from 'react'
 import type { Priority } from '../types/task'
 
-type TaskFormPayload = {
+export type TaskFormPayload = {
   title: string
   description?: string
   priority: Priority
