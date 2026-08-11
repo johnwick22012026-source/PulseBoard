@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import type { Priority, Task } from './types/task'
+import type { Priority, Task, TaskMetrics } from './types/task'
 import { loadTasks, saveTasks } from './utils/storage'
 import type { TaskFormPayload } from './components/TaskForm'
 
@@ -101,7 +101,7 @@ export default function App() {
 
   const normalizedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery])
 
-  const metrics = useMemo(() => {
+  const metrics: TaskMetrics = useMemo(() => {
     const total = tasks.length
     const completed = tasks.filter(task => task.completed).length
     const highPriorityIncomplete = tasks.filter(
@@ -144,13 +144,7 @@ export default function App() {
         <Header />
 
         <div className="space-y-6">
-          <GreetingSummary
-            totalTasks={metrics.total}
-            completedTasks={metrics.completed}
-            activeTasks={metrics.active}
-            highPriorityIncompleteTasks={metrics.highPriorityIncomplete}
-            progressPercent={metrics.progressPercent}
-          />
+          <GreetingSummary metrics={metrics} />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="transition-all duration-200">
