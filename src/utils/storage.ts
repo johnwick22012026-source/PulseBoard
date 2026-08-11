@@ -1,6 +1,6 @@
 import type { Task } from '../types/task'
 
-const TASKS_STORAGE_KEY = 'pulseboard:tasks'
+const TASKS_STORAGE_KEY = 'pulseboard_tasks'
 
 const SAMPLE_TASKS: Task[] = [
   {
@@ -64,6 +64,8 @@ const isTaskArray = (value: unknown): value is Task[] => {
 
 const cloneTasks = (tasks: Task[]): Task[] => tasks.map(task => ({ ...task }))
 
+const loadDefaultTasks = (): Task[] => cloneTasks(SAMPLE_TASKS)
+
 export const saveTasks = (tasks: Task[]): void => {
   if (typeof window === 'undefined') return
   try {
@@ -74,19 +76,29 @@ export const saveTasks = (tasks: Task[]): void => {
 }
 
 export const loadTasks = (): Task[] => {
-  if (typeof window === 'undefined') return cloneTasks(SAMPLE_TASKS)
-
-  const raw = localStorage.getItem(TASKS_STORAGE_KEY)
-  if (!raw) return cloneTasks(SAMPLE_TASKS)
+  if (typeof window === 'undefined') return loadDefaultTasks()
 
   try {
-    const parsed = JSON.parse(raw)
-    if (isTaskArray(parsed)) {
-      return parsed
+    const rawValue = localStorage.getItem(TASKS_STORAGE_KEY)
+    if (!rawValue) return loadDefaultTasks()
+
+    try {
+      const parsed = JSON.parse(rawValue)
+      if (isTaskArray(parsed)) {
+        return cloneTasks(parsed)
+      }
+    } catch (error) {
+      console.warn('Unable to parse stored tasks, falling back to sample data', error)
+    }
+
+    try {
+      localStorage.removeItem(TASKS_STORAGE_KEY)
+    } catch (error) {
+      console.warn('Unable to clear corrupt task data from localStorage', error)
     }
   } catch (error) {
-    console.warn('Unable to parse stored tasks, falling back to sample data', error)
+    console.warn('Unable to access localStorage, falling back to sample data', error)
   }
 
-  return cloneTasks(SAMPLE_TASKS)
+  return loadDefaultTasks()
 }
