@@ -31,7 +31,7 @@ export default function FilterBar({
               type="button"
               aria-pressed={isActive}
               onClick={() => onFilterChange(filter)}
-              className={`rounded-2xl border px-4 py-2 text-sm font-medium transition duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400 ${
+              className={`rounded-2xl border px-4 py-2 text-sm font-medium transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-400/80 focus-visible:ring-offset-slate-900 active:scale-[0.98] ${
                 isActive
                   ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200 shadow-[0_0_0_1px_rgba(16,185,129,0.5)]'
                   : 'border-slate-800 bg-slate-950/40 text-white hover:border-emerald-400'
@@ -51,7 +51,7 @@ export default function FilterBar({
           placeholder="Search tasks..."
           value={searchQuery}
           onChange={event => onSearchQueryChange(event.target.value)}
-          className="flex-1 min-w-[180px] rounded-2xl border border-slate-800 bg-slate-950/40 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 transition duration-150 focus:border-emerald-400 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-400"
+          className="flex-1 min-w-[180px] rounded-2xl border border-slate-800 bg-slate-950/40 px-4 py-2 text-sm text-slate-200 placeholder:text-slate-500 transition duration-150 focus:border-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/60"
         />
       </div>
     </section>
