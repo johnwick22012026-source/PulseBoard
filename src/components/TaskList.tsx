@@ -9,6 +9,8 @@ type TaskUpdatePayload = {
   title: string
   description?: string
   priority: Priority
+  date?: string
+  duration?: string
 }
 
 type TaskListProps = {
