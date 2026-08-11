@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Check, Circle, Clock3, Pencil, Square, Trash2 } from 'lucide-react'
+import { Check, Circle, Clock3, Pencil, Trash2 } from 'lucide-react'
 
 import type { Priority, Task } from '../types/task'
 
@@ -151,34 +151,48 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
         task.completed ? 'opacity-70' : 'opacity-100'
       }`}
     >
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => onToggleComplete(task.id)}
-            className={`rounded-full border p-2 transition ${
-              task.completed
-                ? 'border-emerald-400 bg-emerald-500/20 text-emerald-400'
-                : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:border-emerald-400'
-            }`}
-          >
-            {task.completed ? <Check className="h-4 w-4" /> : <Square className="h-4 w-4" />}
-          </button>
-          <div>
-            <p className={`text-base font-semibold ${task.completed ? 'text-slate-500 line-through' : 'text-white'}`}>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex flex-1 items-start gap-3">
+          <label className="flex items-center gap-3" htmlFor={`task-checkbox-${task.id}`}>
+            <input
+              id={`task-checkbox-${task.id}`}
+              type="checkbox"
+              checked={task.completed}
+              onChange={() => onToggleComplete(task.id)}
+              className="peer sr-only"
+            />
+            <span
+              className={`flex h-9 w-9 items-center justify-center rounded-full border p-2 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400 ${
+                task.completed
+                  ? 'border-emerald-400 bg-emerald-500/20 text-emerald-400'
+                  : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:border-emerald-400'
+              }`}
+              aria-hidden
+            >
+              {task.completed ? <Check className="h-4 w-4" /> : <Pencil className="h-4 w-4 opacity-0" />}
+            </span>
+            <span className="sr-only">Toggle completion for {task.title}</span>
+          </label>
+          <div className="flex-1">
+            <p
+              className={`text-base font-semibold transition ${
+                task.completed ? 'text-slate-500 line-through' : 'text-white'
+              }`}
+            >
               {task.title}
             </p>
             {task.description ? (
-              <p className="text-xs text-slate-400">{task.description}</p>
+              <p className={`text-xs transition ${task.completed ? 'text-slate-500 line-through' : 'text-slate-400'}`}>{task.description}</p>
             ) : (
               <p className="text-xs uppercase tracking-[0.3em] text-slate-600">No description</p>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center sm:gap-2">
           <button
             type="button"
             onClick={() => setIsEditing(true)}
+            aria-label={`Edit task`}
             className="rounded-full border border-slate-800 bg-slate-900/60 p-2 text-slate-400 transition hover:border-slate-500"
           >
             <Pencil className="h-4 w-4" />
@@ -186,13 +200,14 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
           <button
             type="button"
             onClick={() => onDelete(task.id)}
+            aria-label="Delete task"
             className="rounded-full border border-slate-800 bg-slate-900/60 p-2 text-slate-400 transition hover:border-rose-500"
           >
             <Trash2 className="h-4 w-4" />
           </button>
         </div>
       </div>
-      <div className="flex items-center justify-between text-xs uppercase tracking-[0.3em] text-slate-500">
+      <div className="flex flex-col gap-2 text-xs uppercase tracking-[0.3em] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-2">
           <Clock3 className="h-4 w-4" />
           <span>{task.time || 'No estimate'}</span>
