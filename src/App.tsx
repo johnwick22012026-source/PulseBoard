@@ -18,12 +18,40 @@ type TaskUpdatePayload = {
 
 type FilterOption = 'All' | 'Active' | 'Completed'
 
+type ProgressData = {
+  total: number
+  completed: number
+  highPriorityIncomplete: number
+  progressPercent: number
+  message: string
+}
+
 const TITLE_MAX_LENGTH = 100
 const DESCRIPTION_MAX_LENGTH = 300
 
 const sanitizeTitle = (title: string) => title.trim().slice(0, TITLE_MAX_LENGTH)
 const sanitizeDescription = (description?: string) =>
   description?.trim().slice(0, DESCRIPTION_MAX_LENGTH)
+
+const getMotivationalMessage = (percent: number, total: number) => {
+  if (total === 0 || percent === 0) {
+    return 'Start knocking out tasks to see progress here.'
+  }
+
+  if (percent >= 100) {
+    return 'Perfect score! Enjoy the break.'
+  }
+
+  if (percent >= 80) {
+    return 'You are cruising — stay focused.'
+  }
+
+  if (percent >= 50) {
+    return 'Great momentum. Keep pushing.'
+  }
+
+  return 'Let’s tackle the high-impact tasks first.'
+}
 
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => loadTasks())
@@ -101,13 +129,34 @@ export default function App() {
 
   const normalizedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery])
 
-  const metrics: TaskMetrics = useMemo(() => {
+  const progressData = useMemo<ProgressData>(() => {
     const total = tasks.length
-    const completed = tasks.filter(task => task.completed).length
-    const highPriorityIncomplete = tasks.filter(
-      task => task.priority === 'high' && !task.completed,
-    ).length
-    const progressPercent = total === 0 ? 0 : Math.round((completed / total) * 100)
+    let completed = 0
+    let highPriorityIncomplete = 0
+
+    tasks.forEach(task => {
+      if (task.completed) {
+        completed += 1
+      } else if (task.priority === 'high') {
+        highPriorityIncomplete += 1
+      }
+    })
+
+    const rawPercent = total === 0 ? 0 : Math.round((completed / total) * 100)
+    const progressPercent = Math.min(Math.max(rawPercent, 0), 100)
+    const message = getMotivationalMessage(progressPercent, total)
+
+    return {
+      total,
+      completed,
+      highPriorityIncomplete,
+      progressPercent,
+      message,
+    }
+  }, [tasks])
+
+  const metrics: TaskMetrics = useMemo(() => {
+    const { total, completed, highPriorityIncomplete, progressPercent } = progressData
 
     return {
       total,
@@ -116,7 +165,7 @@ export default function App() {
       highPriorityIncomplete,
       progressPercent,
     }
-  }, [tasks])
+  }, [progressData])
 
   const visibleTasks = useMemo(() => {
     let result = tasks
@@ -148,7 +197,12 @@ export default function App() {
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="transition-all duration-200">
-              <ProgressCard completed={metrics.completed} total={metrics.total} />
+              <ProgressCard
+                completed={progressData.completed}
+                total={progressData.total}
+                progressPercent={progressData.progressPercent}
+                message={progressData.message}
+              />
             </div>
             <div className="transition-all duration-200">
               <TaskForm onSubmit={handleCreateTask} />
