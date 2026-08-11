@@ -189,43 +189,38 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 lg:px-12">
+      <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8 lg:px-12 xl:px-16">
         <Header />
 
-        <div className="space-y-6">
+        <main className="mt-6 flex flex-col gap-6">
           <GreetingSummary metrics={metrics} />
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="transition-all duration-200">
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="flex flex-col gap-6">
               <ProgressCard
                 completed={progressData.completed}
                 total={progressData.total}
                 progressPercent={progressData.progressPercent}
                 message={progressData.message}
               />
+              <FilterBar
+                activeFilter={filter}
+                onFilterChange={setFilter}
+                searchQuery={searchQuery}
+                onSearchQueryChange={setSearchQuery}
+              />
             </div>
-            <div className="transition-all duration-200">
-              <TaskForm onSubmit={handleCreateTask} />
-            </div>
+            <TaskForm onSubmit={handleCreateTask} />
           </div>
 
-          <FilterBar
-            activeFilter={filter}
-            onFilterChange={setFilter}
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
+          <TaskList
+            tasks={visibleTasks}
+            hasTasks={visibleTasks.length > 0}
+            onToggleComplete={handleToggleComplete}
+            onDelete={handleDeleteTask}
+            onUpdate={handleUpdateTask}
           />
-
-          <section className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40 p-4 transition-all duration-200">
-            <TaskList
-              tasks={visibleTasks}
-              hasTasks={visibleTasks.length > 0}
-              onToggleComplete={handleToggleComplete}
-              onDelete={handleDeleteTask}
-              onUpdate={handleUpdateTask}
-            />
-          </section>
-        </div>
+        </main>
       </div>
     </div>
   )
