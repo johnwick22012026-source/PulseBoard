@@ -83,16 +83,25 @@ export default function App() {
           return task
         }
 
+        const trimmedTitle = payload.title.trim().slice(0, TITLE_MAX_LENGTH)
+
+        if (!trimmedTitle) {
+          return task
+        }
+
         const trimmedDescription = payload.description?.trim()
+        const clampedDescription = trimmedDescription
+          ? trimmedDescription.slice(0, DESCRIPTION_MAX_LENGTH)
+          : undefined
 
         return {
           ...task,
-          title: payload.title,
+          title: trimmedTitle,
           priority: payload.priority,
           description:
             payload.description === undefined
               ? task.description
-              : trimmedDescription || undefined,
+              : clampedDescription || undefined,
         }
       }),
     )
@@ -113,26 +122,6 @@ export default function App() {
   const totalTasks = tasks.length
   const activeTasks = totalTasks - completedTasks
   const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100)
-
-  const progressMessage = useMemo(() => {
-    if (progressPercent === 0) {
-      return 'Start knocking out tasks to see progress here.'
-    }
-
-    if (progressPercent >= 100) {
-      return 'Perfect score! Enjoy the break.'
-    }
-
-    if (progressPercent >= 75) {
-      return 'You are cruising — stay focused.'
-    }
-
-    if (progressPercent >= 50) {
-      return 'Great momentum. Keep pushing.'
-    }
-
-    return 'Let’s tackle the high-impact tasks first.'
-  }, [progressPercent])
 
   const filteredTasks = useMemo(() => {
     let result = tasks
@@ -171,7 +160,7 @@ export default function App() {
               highPriorityIncompleteTasks={highPriorityIncompleteTasks}
               progressPercent={progressPercent}
             />
-            <ProgressCard progressPercent={progressPercent} message={progressMessage} />
+            <ProgressCard completed={completedTasks} total={totalTasks} />
             <TaskForm onSubmit={handleCreateTask} />
             <FilterBar
               activeFilter={filter}
