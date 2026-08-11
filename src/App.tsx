@@ -19,6 +19,9 @@ type TaskUpdatePayload = {
 
 type FilterOption = 'All' | 'Active' | 'Completed'
 
+const TITLE_MAX_LENGTH = 100
+const DESCRIPTION_MAX_LENGTH = 300
+
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => loadTasks())
   const [searchQuery, setSearchQuery] = useState('')
@@ -29,8 +32,28 @@ export default function App() {
   }, [tasks])
 
   const handleCreateTask = (payload: TaskFormPayload) => {
+    const trimmedTitle = payload.title.trim().slice(0, TITLE_MAX_LENGTH)
+
+    if (!trimmedTitle) {
+      return
+    }
+
+    const trimmedDescription = payload.description?.trim()
+    const clampedDescription = trimmedDescription
+      ? trimmedDescription.slice(0, DESCRIPTION_MAX_LENGTH)
+      : undefined
+
+    const sanitizedPayload: TaskFormPayload = {
+      title: trimmedTitle,
+      priority: payload.priority,
+    }
+
+    if (clampedDescription) {
+      sanitizedPayload.description = clampedDescription
+    }
+
     const newTask: Task = {
-      ...payload,
+      ...sanitizedPayload,
       project: '',
       time: '',
       id: crypto.randomUUID(),
@@ -131,6 +154,9 @@ export default function App() {
     })
   }, [tasks, filter, normalizedQuery])
 
+  const shouldShowTasks = filteredTasks.length > 0
+  const shouldShowEmptySearchState = totalTasks > 0 && filteredTasks.length === 0
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 lg:px-12">
@@ -153,12 +179,22 @@ export default function App() {
               searchQuery={searchQuery}
               onSearchQueryChange={setSearchQuery}
             />
-            <TaskList
-              tasks={filteredTasks}
-              onToggleComplete={handleToggleComplete}
-              onDelete={handleDeleteTask}
-              onUpdate={handleUpdateTask}
-            />
+
+            {shouldShowTasks ? (
+              <TaskList
+                tasks={filteredTasks}
+                onToggleComplete={handleToggleComplete}
+                onDelete={handleDeleteTask}
+                onUpdate={handleUpdateTask}
+              />
+            ) : shouldShowEmptySearchState ? (
+              <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 text-center">
+                <p className="text-lg font-semibold text-slate-100">No tasks match that query.</p>
+                <p className="mt-2 text-sm text-slate-400">
+                  Try clearing the search or selecting a different filter to see your tasks again.
+                </p>
+              </div>
+            ) : null}
           </div>
 
           {tasks.length === 0 && (
