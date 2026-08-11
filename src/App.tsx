@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Priority, Task, TaskMetrics } from './types/task'
-import { loadTasks, saveTasks } from './utils/storage'
+import { loadTasks, saveTasks, getThemePreference, setThemePreference } from './utils/storage'
 import type { ThemeMode } from './utils/storage'
 import type { TaskFormPayload } from './components/TaskForm'
 
@@ -86,7 +86,7 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => loadTasks())
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<FilterOption>('All')
-  const [theme, setTheme] = useState<ThemeMode>('dark')
+  const [theme, setTheme] = useState<ThemeMode>(() => getThemePreference())
   const [calendarMonth, setCalendarMonth] = useState(() => {
     const now = new Date()
     return new Date(now.getFullYear(), now.getMonth(), 1)
@@ -388,6 +388,10 @@ export default function App() {
       return titleMatches || descriptionMatches
     })
   }, [tasks, filter, normalizedQuery])
+
+  useEffect(() => {
+    setThemePreference(theme)
+  }, [theme])
 
   useEffect(() => {
     if (typeof document === 'undefined') return
