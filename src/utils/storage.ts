@@ -55,6 +55,13 @@ const SAMPLE_TASKS: Task[] = [
   },
 ]
 
+export type ThemeMode = 'dark' | 'light'
+
+const THEME_PREFERENCE_KEY = 'pulseboard_theme_preference'
+
+const isThemeMode = (value: unknown): value is ThemeMode =>
+  value === 'dark' || value === 'light'
+
 const isTask = (value: unknown): value is Task => {
   if (typeof value !== 'object' || value === null) return false
   const task = value as Task
