@@ -4,29 +4,44 @@ const TASKS_STORAGE_KEY = 'pulseboard:tasks'
 
 const SAMPLE_TASKS: Task[] = [
   {
-    id: 'task-1',
-    title: 'Review Monday sprint goals',
-    description:
-      'Quickly audit the top priorities for the week and align with the team checklist.',
+    id: 'task-landing-page',
+    title: 'Finish landing page',
+    description: 'Polish hero copy, responsive layout, and call-to-action buttons for launch.',
     completed: false,
     priority: 'high',
-    createdAt: new Date().toISOString(),
+    createdAt: '2024-08-01T09:00:00.000Z',
   },
   {
-    id: 'task-2',
-    title: 'Focus mode writing block',
-    description: 'Draft the executive summary and inspiration memo for the new initiative.',
-    completed: false,
+    id: 'task-project-proposal',
+    title: 'Review project proposal',
+    description: 'Double-check timelines, dependencies, and budget before the stakeholder review.',
+    completed: true,
     priority: 'medium',
-    createdAt: new Date().toISOString(),
+    createdAt: '2024-07-30T14:30:00.000Z',
   },
   {
-    id: 'task-3',
-    title: 'Celebrate wins',
-    description: 'Capture three small wins from last week and share them with the team.',
+    id: 'task-read-pages',
+    title: 'Read 20 pages',
+    description: 'Cover the next chapter of the design systems reference book for inspiration.',
     completed: false,
     priority: 'low',
-    createdAt: new Date().toISOString(),
+    createdAt: '2024-07-25T18:15:00.000Z',
+  },
+  {
+    id: 'task-workout',
+    title: 'Workout',
+    description: 'Finish the HIIT routine and post-workout stretch for lasting energy.',
+    completed: true,
+    priority: 'medium',
+    createdAt: '2024-07-29T07:10:00.000Z',
+  },
+  {
+    id: 'task-plan-tomorrow',
+    title: 'Plan tomorrow',
+    description: 'Outline priorities and prep quick notes to hit the ground running in the morning.',
+    completed: false,
+    priority: 'high',
+    createdAt: '2024-08-01T19:45:00.000Z',
   },
 ]
 
@@ -47,6 +62,8 @@ const isTaskArray = (value: unknown): value is Task[] => {
   return Array.isArray(value) && value.every(isTask)
 }
 
+const cloneTasks = (tasks: Task[]): Task[] => tasks.map(task => ({ ...task }))
+
 export const saveTasks = (tasks: Task[]): void => {
   if (typeof window === 'undefined') return
   try {
@@ -57,10 +74,10 @@ export const saveTasks = (tasks: Task[]): void => {
 }
 
 export const loadTasks = (): Task[] => {
-  if (typeof window === 'undefined') return SAMPLE_TASKS
+  if (typeof window === 'undefined') return cloneTasks(SAMPLE_TASKS)
 
   const raw = localStorage.getItem(TASKS_STORAGE_KEY)
-  if (!raw) return SAMPLE_TASKS
+  if (!raw) return cloneTasks(SAMPLE_TASKS)
 
   try {
     const parsed = JSON.parse(raw)
@@ -71,5 +88,5 @@ export const loadTasks = (): Task[] => {
     console.warn('Unable to parse stored tasks, falling back to sample data', error)
   }
 
-  return SAMPLE_TASKS
+  return cloneTasks(SAMPLE_TASKS)
 }
