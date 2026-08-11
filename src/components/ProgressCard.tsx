@@ -16,7 +16,7 @@ const getTextColor = (percent: number) => {
     return 'text-amber-400'
   }
 
-  return 'text-slate-200'
+  return 'text-slate-900 dark:text-slate-200'
 }
 
 export default function ProgressCard({
@@ -44,11 +44,11 @@ export default function ProgressCard({
   const taskLabel = safeTotal === 1 ? 'task' : 'tasks'
 
   return (
-    <section className="rounded-3xl border border-slate-800/70 bg-gradient-to-br from-slate-900/80 to-slate-900/40 p-6 shadow-xl shadow-slate-900/50 transition-colors duration-300">
+    <section className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-100/80 via-white to-slate-50/70 p-6 shadow-xl shadow-slate-900/10 transition-colors duration-300 dark:border-slate-800/70 dark:bg-gradient-to-br dark:from-slate-900/80 dark:via-slate-900/60 dark:to-slate-900/40 dark:shadow-slate-900/50">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <p className="text-xs uppercase tracking-[0.4em] text-slate-500">Focus meter</p>
-          <h3 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">Today&apos;s Progress</h3>
+          <p className="text-xs uppercase tracking-[0.4em] text-slate-600 dark:text-slate-500">Focus meter</p>
+          <h3 className="mt-2 text-2xl font-semibold text-slate-900 dark:text-white sm:text-3xl">Today&apos;s Progress</h3>
         </div>
         <Sparkles className="h-9 w-9 text-emerald-400" aria-hidden />
       </div>
@@ -57,14 +57,14 @@ export default function ProgressCard({
         <div className="flex items-baseline justify-between gap-4">
           <div className="flex items-baseline gap-1">
             <p className={`text-4xl font-semibold ${getTextColor(clampedPercent)}`}>{clampedPercent}%</p>
-            <p className="text-sm text-slate-400">complete</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">complete</p>
           </div>
-          <p className="text-sm font-medium text-slate-300">
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-300">
             {safeCompleted} / {safeTotal} {taskLabel}
           </p>
         </div>
 
-        <div className="relative h-2 overflow-hidden rounded-full bg-slate-800">
+        <div className="relative h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
           <div
             className="h-full rounded-full bg-gradient-to-r from-emerald-400/80 to-emerald-400 transition-all duration-500 ease-out"
             style={{ width: `${clampedPercent}%` }}
@@ -76,7 +76,7 @@ export default function ProgressCard({
         </div>
       </div>
 
-      <p className="mt-6 text-sm leading-relaxed text-slate-200/90 transition-colors duration-300">{activeMessage}</p>
+      <p className="mt-6 text-sm leading-relaxed text-slate-600 dark:text-slate-200/90 transition-colors duration-300">{activeMessage}</p>
     </section>
   )
 }
