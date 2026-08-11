@@ -101,22 +101,22 @@ export default function App() {
 
   const normalizedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery])
 
-  const completedTasks = useMemo(
-    () => tasks.filter(task => task.completed).length,
-    [tasks],
-  )
+  const metrics = useMemo(() => {
+    const total = tasks.length
+    const completed = tasks.filter(task => task.completed).length
+    const highPriorityIncomplete = tasks.filter(
+      task => task.priority === 'high' && !task.completed,
+    ).length
+    const progressPercent = total === 0 ? 0 : Math.round((completed / total) * 100)
 
-  const highPriorityIncompleteTasks = useMemo(
-    () => tasks.filter(task => task.priority === 'high' && !task.completed).length,
-    [tasks],
-  )
-
-  const totalTasks = useMemo(() => tasks.length, [tasks])
-  const activeTasks = totalTasks - completedTasks
-  const progressPercent = useMemo(
-    () => (totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100)),
-    [completedTasks, totalTasks],
-  )
+    return {
+      total,
+      completed,
+      active: total - completed,
+      highPriorityIncomplete,
+      progressPercent,
+    }
+  }, [tasks])
 
   const visibleTasks = useMemo(() => {
     let result = tasks
@@ -145,16 +145,16 @@ export default function App() {
 
         <div className="space-y-6">
           <GreetingSummary
-            totalTasks={totalTasks}
-            completedTasks={completedTasks}
-            activeTasks={activeTasks}
-            highPriorityIncompleteTasks={highPriorityIncompleteTasks}
-            progressPercent={progressPercent}
+            totalTasks={metrics.total}
+            completedTasks={metrics.completed}
+            activeTasks={metrics.active}
+            highPriorityIncompleteTasks={metrics.highPriorityIncomplete}
+            progressPercent={metrics.progressPercent}
           />
 
           <div className="grid gap-6 lg:grid-cols-2">
             <div className="transition-all duration-200">
-              <ProgressCard completed={completedTasks} total={totalTasks} />
+              <ProgressCard completed={metrics.completed} total={metrics.total} />
             </div>
             <div className="transition-all duration-200">
               <TaskForm onSubmit={handleCreateTask} />
@@ -171,7 +171,7 @@ export default function App() {
           <section className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40 p-4 transition-all duration-200">
             <TaskList
               tasks={visibleTasks}
-              hasTasks={totalTasks > 0}
+              hasTasks={visibleTasks.length > 0}
               onToggleComplete={handleToggleComplete}
               onDelete={handleDeleteTask}
               onUpdate={handleUpdateTask}
