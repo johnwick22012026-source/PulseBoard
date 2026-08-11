@@ -55,16 +55,23 @@ export default function App() {
 
   const handleUpdateTask = (taskId: string, payload: TaskUpdatePayload) => {
     setTasks(prevTasks =>
-      prevTasks.map(task =>
-        task.id === taskId
-          ? {
-              ...task,
-              title: payload.title,
-              priority: payload.priority,
-              description: payload.description?.trim() ?? undefined,
-            }
-          : task,
-      ),
+      prevTasks.map(task => {
+        if (task.id !== taskId) {
+          return task
+        }
+
+        const trimmedDescription = payload.description?.trim()
+
+        return {
+          ...task,
+          title: payload.title,
+          priority: payload.priority,
+          description:
+            payload.description === undefined
+              ? task.description
+              : trimmedDescription || undefined,
+        }
+      }),
     )
   }
 
@@ -75,8 +82,8 @@ export default function App() {
     [tasks],
   )
 
-  const highPriorityTasks = useMemo(
-    () => tasks.filter(task => task.priority === 'high').length,
+  const highPriorityIncompleteTasks = useMemo(
+    () => tasks.filter(task => task.priority === 'high' && !task.completed).length,
     [tasks],
   )
 
@@ -135,7 +142,8 @@ export default function App() {
               totalTasks={totalTasks}
               completedTasks={completedTasks}
               activeTasks={activeTasks}
-              highPriorityTasks={highPriorityTasks}
+              highPriorityIncompleteTasks={highPriorityIncompleteTasks}
+              progressPercent={progressPercent}
             />
             <ProgressCard progressPercent={progressPercent} message={progressMessage} />
             <TaskForm onSubmit={handleCreateTask} />
