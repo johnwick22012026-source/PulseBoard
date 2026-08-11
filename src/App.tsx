@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Priority, Task, TaskMetrics } from './types/task'
-import { loadTasks, saveTasks, loadThemePreference, saveThemePreference } from './utils/storage'
+import { loadTasks, saveTasks } from './utils/storage'
 import type { ThemeMode } from './utils/storage'
 import type { TaskFormPayload } from './components/TaskForm'
 
@@ -10,6 +10,8 @@ import ProgressCard from './components/ProgressCard'
 import TaskForm from './components/TaskForm'
 import FilterBar from './components/FilterBar'
 import TaskList from './components/TaskList'
+import TaskCalendar from './components/TaskCalendar'
+import TaskItem from './components/TaskItem'
 
 type TaskUpdatePayload = {
   title: string
@@ -58,7 +60,12 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => loadTasks())
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<FilterOption>('All')
-  const [theme, setTheme] = useState<ThemeMode>(() => loadThemePreference() ?? 'dark')
+  const [theme, setTheme] = useState<ThemeMode>('dark')
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const now = new Date()
+    return new Date(now.getFullYear(), now.getMonth(), 1)
+  })
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
 
   const persistTasks = (updater: (prevTasks: Task[]) => Task[]) => {
     setTasks(prevTasks => {
@@ -69,11 +76,7 @@ export default function App() {
   }
 
   const handleToggleTheme = () => {
-    setTheme(prevTheme => {
-      const nextTheme = prevTheme === 'dark' ? 'light' : 'dark'
-      saveThemePreference(nextTheme)
-      return nextTheme
-    })
+    setTheme(prevTheme => (prevTheme === 'dark' ? 'light' : 'dark'))
   }
 
   const handleCreateTask = (payload: TaskFormPayload) => {
@@ -136,6 +139,41 @@ export default function App() {
       }),
     )
   }
+
+  const handlePreviousMonth = () => {
+    setCalendarMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
+  }
+
+  const handleNextMonth = () => {
+    setCalendarMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))
+  }
+
+  const handleResetMonth = () => {
+    const now = new Date()
+    setCalendarMonth(new Date(now.getFullYear(), now.getMonth(), 1))
+  }
+
+  const handleCalendarTaskSelect = (taskId: string) => {
+    const task = tasks.find(taskItem => taskItem.id === taskId)
+
+    if (task?.date) {
+      const [year, month] = task.date.split('-')
+      setCalendarMonth(new Date(Number(year), Number(month) - 1, 1))
+    }
+
+    setSelectedTaskId(taskId)
+  }
+
+  useEffect(() => {
+    if (selectedTaskId && !tasks.some(task => task.id === selectedTaskId)) {
+      setSelectedTaskId(null)
+    }
+  }, [selectedTaskId, tasks])
+
+  const selectedTask = useMemo(
+    () => (selectedTaskId ? tasks.find(task => task.id === selectedTaskId) ?? null : null),
+    [tasks, selectedTaskId],
+  )
 
   const normalizedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery])
 
@@ -237,6 +275,39 @@ export default function App() {
             onDelete={handleDeleteTask}
             onUpdate={handleUpdateTask}
           />
+          <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+            <TaskCalendar
+              tasks={tasks}
+              month={calendarMonth}
+              selectedTaskId={selectedTaskId}
+              onPreviousMonth={handlePreviousMonth}
+              onNextMonth={handleNextMonth}
+              onToday={handleResetMonth}
+              onSelectTask={handleCalendarTaskSelect}
+            />
+            <section className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 shadow-2xl shadow-slate-950/40">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[0.65rem] uppercase tracking-[0.5em] text-slate-500">Calendar focus</p>
+                  <h3 className="text-lg font-semibold text-white">Task details</h3>
+                </div>
+              </div>
+              <div className="mt-5">
+                {selectedTask ? (
+                  <TaskItem
+                    task={selectedTask}
+                    onToggleComplete={handleToggleComplete}
+                    onDelete={handleDeleteTask}
+                    onUpdate={handleUpdateTask}
+                  />
+                ) : (
+                  <div className="rounded-2xl border border-dashed border-slate-700/60 px-4 py-6 text-sm text-slate-400">
+                    Select a dated task from the calendar to view or edit it.
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
         </main>
       </div>
     </div>
