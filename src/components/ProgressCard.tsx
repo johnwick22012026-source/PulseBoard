@@ -3,32 +3,17 @@ import { Sparkles } from 'lucide-react'
 type ProgressCardProps = {
   completed: number
   total: number
+  progressPercent: number
+  message: string
 }
 
-const getMotivationalMessage = (percent: number, total: number) => {
-  if (total === 0 || percent === 0) {
-    return 'Start knocking out tasks to see progress here.'
-  }
-
-  if (percent >= 100) {
-    return 'Perfect score! Enjoy the break.'
-  }
-
-  if (percent >= 80) {
-    return 'You are cruising — stay focused.'
-  }
-
-  if (percent >= 50) {
-    return 'Great momentum. Keep pushing.'
-  }
-
-  return 'Let’s tackle the high-impact tasks first.'
-}
-
-export default function ProgressCard({ completed, total }: ProgressCardProps) {
-  const progressPercent = total === 0 ? 0 : Math.round((completed / total) * 100)
+export default function ProgressCard({
+  completed,
+  total,
+  progressPercent,
+  message,
+}: ProgressCardProps) {
   const clampedPercent = Math.min(Math.max(progressPercent, 0), 100)
-  const message = getMotivationalMessage(clampedPercent, total)
 
   return (
     <section className="rounded-3xl border border-slate-800/70 bg-gradient-to-br from-slate-900/80 to-slate-900/40 p-6 shadow-xl shadow-slate-900/50">
