@@ -21,6 +21,10 @@ type FilterOption = 'All' | 'Active' | 'Completed'
 const TITLE_MAX_LENGTH = 100
 const DESCRIPTION_MAX_LENGTH = 300
 
+const sanitizeTitle = (title: string) => title.trim().slice(0, TITLE_MAX_LENGTH)
+const sanitizeDescription = (description?: string) =>
+  description?.trim().slice(0, DESCRIPTION_MAX_LENGTH)
+
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => loadTasks())
   const [searchQuery, setSearchQuery] = useState('')
@@ -35,28 +39,18 @@ export default function App() {
   }
 
   const handleCreateTask = (payload: TaskFormPayload) => {
-    const trimmedTitle = payload.title.trim().slice(0, TITLE_MAX_LENGTH)
+    const trimmedTitle = sanitizeTitle(payload.title)
 
     if (!trimmedTitle) {
       return
     }
 
-    const trimmedDescription = payload.description?.trim()
-    const clampedDescription = trimmedDescription
-      ? trimmedDescription.slice(0, DESCRIPTION_MAX_LENGTH)
-      : undefined
-
-    const sanitizedPayload: TaskFormPayload = {
-      title: trimmedTitle,
-      priority: payload.priority,
-    }
-
-    if (clampedDescription) {
-      sanitizedPayload.description = clampedDescription
-    }
+    const sanitizedDescription = sanitizeDescription(payload.description)
 
     const newTask: Task = {
-      ...sanitizedPayload,
+      title: trimmedTitle,
+      description: sanitizedDescription,
+      priority: payload.priority,
       project: '',
       time: '',
       id: crypto.randomUUID(),
@@ -86,25 +80,20 @@ export default function App() {
           return task
         }
 
-        const trimmedTitle = payload.title.trim().slice(0, TITLE_MAX_LENGTH)
+        const trimmedTitle = sanitizeTitle(payload.title)
 
         if (!trimmedTitle) {
           return task
         }
 
-        const trimmedDescription = payload.description?.trim()
-        const clampedDescription = trimmedDescription
-          ? trimmedDescription.slice(0, DESCRIPTION_MAX_LENGTH)
-          : undefined
+        const updatedDescription =
+          payload.description === undefined ? task.description : sanitizeDescription(payload.description)
 
         return {
           ...task,
           title: trimmedTitle,
           priority: payload.priority,
-          description:
-            payload.description === undefined
-              ? task.description
-              : clampedDescription || undefined,
+          description: updatedDescription,
         }
       }),
     )
