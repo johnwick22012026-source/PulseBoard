@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Priority, Task, TaskMetrics } from './types/task'
 import { loadTasks, saveTasks } from './utils/storage'
 import type { ThemeMode } from './utils/storage'
@@ -31,6 +31,30 @@ type ProgressData = {
 
 const TITLE_MAX_LENGTH = 100
 const DESCRIPTION_MAX_LENGTH = 300
+
+type PomodoroMode = 'standard' | 'extended'
+type SessionType = 'work' | 'break'
+
+const POMODORO_CONFIG: Record<PomodoroMode, Record<SessionType, number>> = {
+  standard: {
+    work: 25 * 60,
+    break: 5 * 60,
+  },
+  extended: {
+    work: 50 * 60,
+    break: 10 * 60,
+  },
+}
+
+const getSessionDuration = (mode: PomodoroMode, session: SessionType) => POMODORO_CONFIG[mode][session]
+
+const getNextSession = (session: SessionType): SessionType => (session === 'work' ? 'break' : 'work')
+
+const formatTimerDuration = (seconds: number) => {
+  const mins = Math.floor(seconds / 60)
+  const secs = seconds % 60
+  return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+}
 
 const sanitizeTitle = (title: string) => title.trim().slice(0, TITLE_MAX_LENGTH)
 const sanitizeDescription = (description?: string) =>
@@ -66,6 +90,14 @@ export default function App() {
     return new Date(now.getFullYear(), now.getMonth(), 1)
   })
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const timerIntervalRef = useRef<number | null>(null)
+  const sessionTypeRef = useRef<SessionType>('work')
+  const [timerMode, setTimerMode] = useState<PomodoroMode>('standard')
+  const [sessionType, setSessionType] = useState<SessionType>('work')
+  const [timeRemaining, setTimeRemaining] = useState(() => getSessionDuration('standard', 'work'))
+  const [isTimerRunning, setIsTimerRunning] = useState(false)
+  const [hasTimerStarted, setHasTimerStarted] = useState(false)
+  const [associatedTaskId, setAssociatedTaskId] = useState<string | null>(null)
 
   const persistTasks = (updater: (prevTasks: Task[]) => Task[]) => {
     setTasks(prevTasks => {
@@ -73,6 +105,84 @@ export default function App() {
       saveTasks(updatedTasks)
       return updatedTasks
     })
+  }
+
+  const clearTimerInterval = () => {
+    if (timerIntervalRef.current !== null) {
+      window.clearInterval(timerIntervalRef.current)
+      timerIntervalRef.current = null
+    }
+  }
+
+  const handleTimerModeChange = (mode: PomodoroMode) => {
+    if (mode === timerMode) {
+      return
+    }
+
+    clearTimerInterval()
+    sessionTypeRef.current = 'work'
+    setSessionType('work')
+    setTimerMode(mode)
+    setTimeRemaining(getSessionDuration(mode, 'work'))
+    setIsTimerRunning(false)
+    setHasTimerStarted(false)
+    setAssociatedTaskId(null)
+  }
+
+  const handleStartTimer = () => {
+    if (isTimerRunning) {
+      return
+    }
+
+    setIsTimerRunning(true)
+    setHasTimerStarted(true)
+
+    if (selectedTaskId) {
+      setAssociatedTaskId(selectedTaskId)
+    }
+  }
+
+  const handlePauseTimer = () => {
+    if (!isTimerRunning) {
+      return
+    }
+
+    setIsTimerRunning(false)
+  }
+
+  const handleResumeTimer = () => {
+    if (isTimerRunning || !hasTimerStarted) {
+      return
+    }
+
+    setIsTimerRunning(true)
+
+    if (selectedTaskId) {
+      setAssociatedTaskId(selectedTaskId)
+    }
+  }
+
+  const handleResetTimer = () => {
+    clearTimerInterval()
+    setIsTimerRunning(false)
+    setHasTimerStarted(false)
+    sessionTypeRef.current = 'work'
+    setSessionType('work')
+    setTimeRemaining(getSessionDuration(timerMode, 'work'))
+    setAssociatedTaskId(null)
+  }
+
+  const handleSkipSession = () => {
+    const nextSession = getNextSession(sessionTypeRef.current)
+    sessionTypeRef.current = nextSession
+    setSessionType(nextSession)
+    setTimeRemaining(getSessionDuration(timerMode, nextSession))
+    setIsTimerRunning(true)
+    setHasTimerStarted(true)
+
+    if (selectedTaskId) {
+      setAssociatedTaskId(selectedTaskId)
+    }
   }
 
   const handleToggleTheme = () => {
@@ -168,12 +278,47 @@ export default function App() {
     if (selectedTaskId && !tasks.some(task => task.id === selectedTaskId)) {
       setSelectedTaskId(null)
     }
-  }, [selectedTaskId, tasks])
+
+    if (associatedTaskId && !tasks.some(task => task.id === associatedTaskId)) {
+      setAssociatedTaskId(null)
+    }
+  }, [selectedTaskId, associatedTaskId, tasks])
 
   const selectedTask = useMemo(
     () => (selectedTaskId ? tasks.find(task => task.id === selectedTaskId) ?? null : null),
     [tasks, selectedTaskId],
   )
+
+  const associatedTask = associatedTaskId
+    ? tasks.find(task => task.id === associatedTaskId) ?? null
+    : null
+  const timerModeOptions: PomodoroMode[] = ['standard', 'extended']
+  const timerStatusLabel = !hasTimerStarted ? 'Prepared' : isTimerRunning ? 'Running' : 'Paused'
+  const timerSessionLabel = sessionType === 'work' ? 'Focus sprint' : 'Break time'
+
+  useEffect(() => {
+    if (!isTimerRunning) {
+      clearTimerInterval()
+      return
+    }
+
+    timerIntervalRef.current = window.setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev <= 1) {
+          const nextSession = getNextSession(sessionTypeRef.current)
+          sessionTypeRef.current = nextSession
+          setSessionType(nextSession)
+          return getSessionDuration(timerMode, nextSession)
+        }
+
+        return prev - 1
+      })
+    }, 1000)
+
+    return () => {
+      clearTimerInterval()
+    }
+  }, [isTimerRunning, timerMode])
 
   const normalizedQuery = useMemo(() => searchQuery.trim().toLowerCase(), [searchQuery])
 
@@ -267,6 +412,88 @@ export default function App() {
             </div>
             <TaskForm onSubmit={handleCreateTask} />
           </div>
+
+          <section className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 shadow-2xl shadow-slate-950/40">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[0.65rem] uppercase tracking-[0.5em] text-slate-500">Pomodoro</p>
+                <h3 className="text-lg font-semibold text-white">Focus timer</h3>
+              </div>
+              <div className="flex gap-2">
+                {timerModeOptions.map(mode => {
+                  const isActive = mode === timerMode
+                  return (
+                    <button
+                      key={mode}
+                      type="button"
+                      onClick={() => handleTimerModeChange(mode)}
+                      className={`rounded-full border px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.3em] transition ${
+                        isActive
+                          ? 'border-emerald-400 bg-emerald-500/10 text-emerald-200'
+                          : 'border-slate-800 text-slate-500 hover:border-emerald-400'
+                      }`}
+                    >
+                      {mode === 'standard' ? 'Standard' : 'Extended'}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="mt-5 flex flex-col gap-2 rounded-2xl border border-slate-800 bg-slate-900/80 p-5 text-center">
+              <p className="text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">{timerSessionLabel}</p>
+              <p className="text-5xl font-semibold text-white">{formatTimerDuration(timeRemaining)}</p>
+              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">{timerStatusLabel}</p>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {!hasTimerStarted && (
+                <button
+                  type="button"
+                  onClick={handleStartTimer}
+                  className="flex-1 min-w-[110px] rounded-2xl border border-emerald-500 bg-emerald-500/80 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-950 transition duration-150 hover:opacity-90"
+                >
+                  Start
+                </button>
+              )}
+              {hasTimerStarted && !isTimerRunning && (
+                <button
+                  type="button"
+                  onClick={handleResumeTimer}
+                  className="flex-1 min-w-[110px] rounded-2xl border border-emerald-500 bg-emerald-500/80 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-950 transition duration-150 hover:opacity-90"
+                >
+                  Resume
+                </button>
+              )}
+              {isTimerRunning && (
+                <button
+                  type="button"
+                  onClick={handlePauseTimer}
+                  className="flex-1 min-w-[110px] rounded-2xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-400 transition duration-150 hover:border-emerald-400"
+                >
+                  Pause
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleResetTimer}
+                className="flex-1 min-w-[110px] rounded-2xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-400 transition duration-150 hover:border-emerald-400"
+              >
+                Reset
+              </button>
+              <button
+                type="button"
+                onClick={handleSkipSession}
+                className="flex-1 min-w-[110px] rounded-2xl border border-slate-800 bg-slate-900/60 px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-slate-400 transition duration-150 hover:border-emerald-400"
+              >
+                Skip
+              </button>
+            </div>
+            <div className="mt-4 space-y-1 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">
+              <p>Linked task</p>
+              <p className="text-sm font-semibold text-white">
+                {associatedTask?.title ?? selectedTask?.title ?? 'Select a task to assign focus'}
+              </p>
+            </div>
+          </section>
 
           <TaskList
             tasks={visibleTasks}
