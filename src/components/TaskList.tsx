@@ -1,5 +1,7 @@
 import type { Task, Priority } from '../types/task'
 
+import { Sparkles } from 'lucide-react'
+
 import EmptyState from './EmptyState'
 import TaskItem from './TaskItem'
 
@@ -55,7 +57,7 @@ export default function TaskList({
       }
     : {
         title: 'No tasks yet',
-        description: 'Add a focus task to start tracking your productivity streak.',
+        description: 'Create your first task and start making progress.',
         tagline: 'New beginnings'
       }
 
@@ -71,6 +73,11 @@ export default function TaskList({
             title={emptyStateContent.title}
             description={emptyStateContent.description}
             tagline={emptyStateContent.tagline}
+            icon={
+              hasTasks ? undefined : (
+                <Sparkles className="h-6 w-6 text-emerald-300" />
+              )
+            }
           />
         </div>
       ) : (
