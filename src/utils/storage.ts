@@ -11,7 +11,6 @@ const SAMPLE_TASKS: Task[] = [
     completed: false,
     priority: 'high',
     createdAt: new Date().toISOString(),
-    dueDate: undefined,
   },
   {
     id: 'task-2',
@@ -20,7 +19,6 @@ const SAMPLE_TASKS: Task[] = [
     completed: false,
     priority: 'medium',
     createdAt: new Date().toISOString(),
-    dueDate: undefined,
   },
   {
     id: 'task-3',
@@ -29,7 +27,6 @@ const SAMPLE_TASKS: Task[] = [
     completed: false,
     priority: 'low',
     createdAt: new Date().toISOString(),
-    dueDate: undefined,
   },
 ]
 
@@ -39,7 +36,7 @@ const isTask = (value: unknown): value is Task => {
   return (
     typeof task.id === 'string' &&
     typeof task.title === 'string' &&
-    typeof task.description === 'string' &&
+    (typeof task.description === 'undefined' || typeof task.description === 'string') &&
     typeof task.completed === 'boolean' &&
     (task.priority === 'low' || task.priority === 'medium' || task.priority === 'high') &&
     typeof task.createdAt === 'string'
