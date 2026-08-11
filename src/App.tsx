@@ -154,24 +154,32 @@ export default function App() {
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-8 md:px-8 lg:px-12">
         <Header />
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-          <div className="space-y-6">
-            <GreetingSummary
-              totalTasks={totalTasks}
-              completedTasks={completedTasks}
-              activeTasks={activeTasks}
-              highPriorityIncompleteTasks={highPriorityIncompleteTasks}
-              progressPercent={progressPercent}
-            />
-            <ProgressCard completed={completedTasks} total={totalTasks} />
-            <TaskForm onSubmit={handleCreateTask} />
-            <FilterBar
-              activeFilter={filter}
-              onFilterChange={setFilter}
-              searchQuery={searchQuery}
-              onSearchQueryChange={setSearchQuery}
-            />
+        <div className="space-y-6">
+          <GreetingSummary
+            totalTasks={totalTasks}
+            completedTasks={completedTasks}
+            activeTasks={activeTasks}
+            highPriorityIncompleteTasks={highPriorityIncompleteTasks}
+            progressPercent={progressPercent}
+          />
 
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="transition-all duration-200">
+              <ProgressCard completed={completedTasks} total={totalTasks} />
+            </div>
+            <div className="transition-all duration-200">
+              <TaskForm onSubmit={handleCreateTask} />
+            </div>
+          </div>
+
+          <FilterBar
+            activeFilter={filter}
+            onFilterChange={setFilter}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
+          />
+
+          <section className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40 p-4 transition-all duration-200">
             {shouldShowTasks ? (
               <TaskList
                 tasks={filteredTasks}
@@ -180,20 +188,18 @@ export default function App() {
                 onUpdate={handleUpdateTask}
               />
             ) : shouldShowEmptySearchState ? (
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6 text-center">
+              <div className="space-y-3 rounded-2xl border border-slate-800 bg-slate-950/70 p-6 text-center transition-all duration-200">
                 <p className="text-lg font-semibold text-slate-100">No tasks match that query.</p>
-                <p className="mt-2 text-sm text-slate-400">
+                <p className="text-sm text-slate-400">
                   Try clearing the search or selecting a different filter to see your tasks again.
                 </p>
               </div>
-            ) : null}
-          </div>
-
-          {tasks.length === 0 && (
-            <aside className="space-y-6">
-              <EmptyState />
-            </aside>
-          )}
+            ) : (
+              <div className="transition-all duration-200">
+                <EmptyState />
+              </div>
+            )}
+          </section>
         </div>
       </div>
     </div>
