@@ -17,9 +17,12 @@ type TaskUpdatePayload = {
   priority: Priority
 }
 
+type FilterOption = 'All' | 'Active' | 'Completed'
+
 export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => loadTasks())
   const [searchQuery, setSearchQuery] = useState('')
+  const [filter, setFilter] = useState<FilterOption>('All')
 
   useEffect(() => {
     saveTasks(tasks)
@@ -66,17 +69,60 @@ export default function App() {
   }
 
   const normalizedQuery = searchQuery.trim().toLowerCase()
-  const filteredTasks = useMemo(() => {
-    if (!normalizedQuery) {
-      return tasks
+
+  const completedTasks = useMemo(
+    () => tasks.filter(task => task.completed).length,
+    [tasks],
+  )
+
+  const highPriorityTasks = useMemo(
+    () => tasks.filter(task => task.priority === 'high').length,
+    [tasks],
+  )
+
+  const totalTasks = tasks.length
+  const activeTasks = totalTasks - completedTasks
+  const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100)
+
+  const progressMessage = useMemo(() => {
+    if (progressPercent === 0) {
+      return 'Start knocking out tasks to see progress here.'
     }
 
-    return tasks.filter(task => {
+    if (progressPercent >= 100) {
+      return 'Perfect score! Enjoy the break.'
+    }
+
+    if (progressPercent >= 75) {
+      return 'You are cruising — stay focused.'
+    }
+
+    if (progressPercent >= 50) {
+      return 'Great momentum. Keep pushing.'
+    }
+
+    return 'Let’s tackle the high-impact tasks first.'
+  }, [progressPercent])
+
+  const filteredTasks = useMemo(() => {
+    let result = tasks
+
+    if (filter === 'Active') {
+      result = result.filter(task => !task.completed)
+    } else if (filter === 'Completed') {
+      result = result.filter(task => task.completed)
+    }
+
+    if (!normalizedQuery) {
+      return result
+    }
+
+    return result.filter(task => {
       const titleMatches = task.title.toLowerCase().includes(normalizedQuery)
       const descriptionMatches = task.description?.toLowerCase().includes(normalizedQuery)
       return titleMatches || descriptionMatches
     })
-  }, [normalizedQuery, tasks])
+  }, [tasks, filter, normalizedQuery])
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -85,10 +131,20 @@ export default function App() {
 
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           <div className="space-y-6">
-            <GreetingSummary />
-            <ProgressCard />
+            <GreetingSummary
+              totalTasks={totalTasks}
+              completedTasks={completedTasks}
+              activeTasks={activeTasks}
+              highPriorityTasks={highPriorityTasks}
+            />
+            <ProgressCard progressPercent={progressPercent} message={progressMessage} />
             <TaskForm onSubmit={handleCreateTask} />
-            <FilterBar searchQuery={searchQuery} onSearchQueryChange={setSearchQuery} />
+            <FilterBar
+              activeFilter={filter}
+              onFilterChange={setFilter}
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
+            />
             <TaskList
               tasks={filteredTasks}
               onToggleComplete={handleToggleComplete}
