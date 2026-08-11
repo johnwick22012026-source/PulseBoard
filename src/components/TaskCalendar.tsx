@@ -136,7 +136,7 @@ export default function TaskCalendar({
                     >
                       <span className="block text-sm leading-5">{task.title}</span>
                       <span className="text-[0.6rem] uppercase tracking-[0.3em] text-slate-500">
-                        {task.time || 'No estimate'}
+                        {task.duration || task.time || 'No estimate'}
                       </span>
                     </button>
                   ))}
