@@ -119,9 +119,12 @@ export default function App() {
     [tasks],
   )
 
-  const totalTasks = tasks.length
+  const totalTasks = useMemo(() => tasks.length, [tasks])
   const activeTasks = totalTasks - completedTasks
-  const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100)
+  const progressPercent = useMemo(
+    () => (totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100)),
+    [completedTasks, totalTasks],
+  )
 
   const filteredTasks = useMemo(() => {
     let result = tasks
