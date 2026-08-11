@@ -22,12 +22,15 @@ const priorityColor: Record<Priority, string> = {
   high: 'bg-emerald-400',
 }
 
+const TITLE_MAX_LENGTH = 100
+const DESCRIPTION_MAX_LENGTH = 300
+
 export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }: TaskItemProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [titleInput, setTitleInput] = useState(task.title)
   const [descriptionInput, setDescriptionInput] = useState(task.description ?? '')
   const [priorityInput, setPriorityInput] = useState<Priority>(task.priority)
-  const [error, setError] = useState('')
+  const [errors, setErrors] = useState<{ title?: string; description?: string }>({})
 
   useEffect(() => {
     setTitleInput(task.title)
@@ -35,17 +38,32 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
     setPriorityInput(task.priority)
   }, [task.title, task.description, task.priority])
 
-  const handleSaveEdits = () => {
+  const validateInputs = () => {
     const trimmedTitle = titleInput.trim()
+    const trimmedDescription = descriptionInput.trim()
+    const newErrors: { title?: string; description?: string } = {}
 
     if (!trimmedTitle) {
-      setError('Task title is required')
-      return
+      newErrors.title = 'Task title is required'
+    } else if (trimmedTitle.length > TITLE_MAX_LENGTH) {
+      newErrors.title = `Title cannot exceed ${TITLE_MAX_LENGTH} characters`
     }
 
-    setError('')
+    if (trimmedDescription.length > DESCRIPTION_MAX_LENGTH) {
+      newErrors.description = `Description cannot exceed ${DESCRIPTION_MAX_LENGTH} characters`
+    }
 
-    const trimmedDescription = descriptionInput.trim()
+    setErrors(newErrors)
+
+    return { valid: Object.keys(newErrors).length === 0, trimmedTitle, trimmedDescription }
+  }
+
+  const handleSaveEdits = () => {
+    const { valid, trimmedTitle, trimmedDescription } = validateInputs()
+
+    if (!valid) {
+      return
+    }
 
     onUpdate(task.id, {
       title: trimmedTitle,
@@ -60,13 +78,23 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
     setTitleInput(task.title)
     setDescriptionInput(task.description ?? '')
     setPriorityInput(task.priority)
-    setError('')
+    setErrors({})
     setIsEditing(false)
   }
 
   const handleFormSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     handleSaveEdits()
+  }
+
+  const handleEditToggle = () => {
+    if (isEditing) {
+      handleCancelEdits()
+      return
+    }
+
+    setErrors({})
+    setIsEditing(true)
   }
 
   return (
@@ -132,10 +160,16 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
                     id={`edit-title-${task.id}`}
                     className="mt-2 w-full rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
                     value={titleInput}
-                    maxLength={100}
+                    maxLength={TITLE_MAX_LENGTH}
                     onChange={event => setTitleInput(event.target.value)}
                   />
-                  {error && <p className="mt-1 text-rose-400">{error}</p>}
+                  {errors.title ? (
+                    <p className="mt-1 text-rose-400">{errors.title}</p>
+                  ) : (
+                    <p className="mt-1 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">
+                      {titleInput.trim().length}/{TITLE_MAX_LENGTH}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label
@@ -148,12 +182,16 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
                     id={`edit-description-${task.id}`}
                     className="mt-2 h-20 w-full resize-none rounded-2xl border border-slate-800 bg-slate-950/40 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500 focus:border-emerald-400 focus:outline-none"
                     value={descriptionInput}
-                    maxLength={300}
+                    maxLength={DESCRIPTION_MAX_LENGTH}
                     onChange={event => setDescriptionInput(event.target.value)}
                   />
-                  <p className="mt-1 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">
-                    {descriptionInput.length}/300
-                  </p>
+                  {errors.description ? (
+                    <p className="mt-1 text-rose-400">{errors.description}</p>
+                  ) : (
+                    <p className="mt-1 text-[0.65rem] uppercase tracking-[0.3em] text-slate-500">
+                      {descriptionInput.trim().length}/{DESCRIPTION_MAX_LENGTH}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label
@@ -195,7 +233,7 @@ export default function TaskItem({ task, onToggleComplete, onDelete, onUpdate }:
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setIsEditing(prev => !prev)}
+            onClick={handleEditToggle}
             aria-label={`Edit task`}
             className={`rounded-full border border-slate-800 bg-slate-900/60 p-2 text-slate-400 transition hover:border-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-emerald-400 ${
               isEditing ? 'border-emerald-400 text-white' : ''
