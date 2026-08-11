@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { Priority, Task } from './types/task'
 import { loadTasks, saveTasks } from './utils/storage'
 import type { TaskFormPayload } from './components/TaskForm'
@@ -26,9 +26,13 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<FilterOption>('All')
 
-  useEffect(() => {
-    saveTasks(tasks)
-  }, [tasks])
+  const persistTasks = (updater: (prevTasks: Task[]) => Task[]) => {
+    setTasks(prevTasks => {
+      const updatedTasks = updater(prevTasks)
+      saveTasks(updatedTasks)
+      return updatedTasks
+    })
+  }
 
   const handleCreateTask = (payload: TaskFormPayload) => {
     const trimmedTitle = payload.title.trim().slice(0, TITLE_MAX_LENGTH)
@@ -60,11 +64,11 @@ export default function App() {
       createdAt: new Date().toISOString(),
     }
 
-    setTasks(prevTasks => [...prevTasks, newTask])
+    persistTasks(prevTasks => [...prevTasks, newTask])
   }
 
   const handleToggleComplete = (taskId: string) => {
-    setTasks(prevTasks =>
+    persistTasks(prevTasks =>
       prevTasks.map(task =>
         task.id === taskId ? { ...task, completed: !task.completed } : task,
       ),
@@ -72,11 +76,11 @@ export default function App() {
   }
 
   const handleDeleteTask = (taskId: string) => {
-    setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId))
+    persistTasks(prevTasks => prevTasks.filter(task => task.id !== taskId))
   }
 
   const handleUpdateTask = (taskId: string, payload: TaskUpdatePayload) => {
-    setTasks(prevTasks =>
+    persistTasks(prevTasks =>
       prevTasks.map(task => {
         if (task.id !== taskId) {
           return task
