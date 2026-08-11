@@ -50,18 +50,21 @@ export default function TaskList({
   })
 
   const hasMatchingResults = sortedTasks.length > 0
+  const showNoTasksState = !hasTasks
   const showNoMatchingState = hasTasks && !hasMatchingResults
 
-  const emptyStateContent = showNoMatchingState
+  const emptyStateContent = showNoTasksState
     ? {
-        title: 'No matching tasks',
-        description: 'Try a different search or filter.',
-        tagline: 'Filter results',
+        title: 'No tasks yet',
+        description: 'Add your first task to open a focus sprint and start building momentum.',
+        tagline: 'Fresh start',
+        icon: <Sparkles className="h-6 w-6 text-emerald-300" />,
       }
     : {
-        title: 'No tasks yet',
-        description: 'Create your first task and start making progress.',
-        tagline: 'New beginnings',
+        title: 'No matching tasks',
+        description: 'Try a different search, filter, or clear your query to find something on the list.',
+        tagline: 'Refine results',
+        icon: <Search className="h-6 w-6 text-slate-400" />,
       }
 
   return (
@@ -88,13 +91,7 @@ export default function TaskList({
             title={emptyStateContent.title}
             description={emptyStateContent.description}
             tagline={emptyStateContent.tagline}
-            icon={
-              showNoMatchingState ? (
-                <Search className="h-6 w-6 text-slate-400" />
-              ) : (
-                <Sparkles className="h-6 w-6 text-emerald-300" />
-              )
-            }
+            icon={emptyStateContent.icon}
           />
         </div>
       )}
