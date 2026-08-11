@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Priority, Task, TaskMetrics } from './types/task'
-import { loadTasks, saveTasks } from './utils/storage'
+import { loadTasks, saveTasks, loadThemePreference, saveThemePreference } from './utils/storage'
+import type { ThemeMode } from './utils/storage'
 import type { TaskFormPayload } from './components/TaskForm'
 
 import Header from './components/Header'
@@ -57,12 +58,21 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => loadTasks())
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<FilterOption>('All')
+  const [theme, setTheme] = useState<ThemeMode>(() => loadThemePreference() ?? 'dark')
 
   const persistTasks = (updater: (prevTasks: Task[]) => Task[]) => {
     setTasks(prevTasks => {
       const updatedTasks = updater(prevTasks)
       saveTasks(updatedTasks)
       return updatedTasks
+    })
+  }
+
+  const handleToggleTheme = () => {
+    setTheme(prevTheme => {
+      const nextTheme = prevTheme === 'dark' ? 'light' : 'dark'
+      saveThemePreference(nextTheme)
+      return nextTheme
     })
   }
 
@@ -187,10 +197,17 @@ export default function App() {
     })
   }, [tasks, filter, normalizedQuery])
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    document.documentElement.dataset.theme = theme
+  }, [theme])
+
+  const shellThemeClasses = theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className={`min-h-screen ${shellThemeClasses}`}>
       <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-8 lg:px-12 xl:px-16">
-        <Header />
+        <Header theme={theme} onToggleTheme={handleToggleTheme} />
 
         <main className="mt-6 flex flex-col gap-6">
           <GreetingSummary metrics={metrics} />
