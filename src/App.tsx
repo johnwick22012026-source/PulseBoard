@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Priority, Task, TaskMetrics } from './types/task'
-import { loadTasks, saveTasks, getThemePreference, setThemePreference } from './utils/storage'
+import { loadTasks, saveTasks } from './utils/storage'
 import type { ThemeMode } from './utils/storage'
 import type { TaskFormPayload } from './components/TaskForm'
 
@@ -86,7 +86,7 @@ export default function App() {
   const [tasks, setTasks] = useState<Task[]>(() => loadTasks())
   const [searchQuery, setSearchQuery] = useState('')
   const [filter, setFilter] = useState<FilterOption>('All')
-  const [theme, setTheme] = useState<ThemeMode>(() => getThemePreference())
+  const [theme, setTheme] = useState<ThemeMode>('light')
   const [calendarMonth, setCalendarMonth] = useState(() => {
     const now = new Date()
     return new Date(now.getFullYear(), now.getMonth(), 1)
@@ -390,7 +390,7 @@ export default function App() {
   }, [tasks, filter, normalizedQuery])
 
   useEffect(() => {
-    setThemePreference(theme)
+    setTheme
   }, [theme])
 
   useEffect(() => {
@@ -517,7 +517,7 @@ export default function App() {
           />
           <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
             <TaskCalendar
-              tasks={tasks}
+              tasks={visibleTasks}
               month={calendarMonth}
               selectedTaskId={selectedTaskId}
               onPreviousMonth={handlePreviousMonth}
