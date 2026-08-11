@@ -103,6 +103,8 @@ export default function TaskForm({ onSubmit }: TaskFormProps) {
 
   const isSubmitDisabled = !title.trim() || Boolean(titleError) || Boolean(descriptionError)
 
+  const descriptionHelperId = descriptionError ? 'description-error' : 'description-help'
+
   return (
     <section className="rounded-3xl border border-slate-800 bg-gradient-to-br from-slate-900/70 via-slate-900/80 to-slate-900/60 p-6 shadow-2xl shadow-slate-900/60">
       <div className="flex items-center justify-between">
@@ -153,10 +155,15 @@ export default function TaskForm({ onSubmit }: TaskFormProps) {
             maxLength={DESCRIPTION_MAX_LENGTH}
             onChange={handleDescriptionChange}
             aria-invalid={Boolean(descriptionError)}
-            aria-describedby="description-help"
+            aria-describedby={descriptionHelperId}
           />
           {descriptionError ? (
-            <p className="text-[0.7rem] text-rose-400" role="alert" aria-live="assertive">
+            <p
+              id="description-error"
+              className="text-[0.7rem] text-rose-400"
+              role="alert"
+              aria-live="assertive"
+            >
               {descriptionError}
             </p>
           ) : (
